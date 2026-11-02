@@ -1,11 +1,7 @@
 package com.roland.moi.ui
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
 import android.provider.Settings
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -48,7 +44,6 @@ import com.roland.moi.data.Store
 import kotlinx.coroutines.delay
 import java.util.Calendar
 
-const val DNS_HOST = "family-filter-dns.cleanbrowsing.org"
 
 @Composable
 fun HomeScreen(d: AppData, shieldOn: Boolean) {
@@ -156,24 +151,6 @@ fun HomeScreen(d: AppData, shieldOn: Boolean) {
                     if (r.what.isNotBlank()) Text(r.what, color = TextMain, fontSize = 14.sp, lineHeight = 20.sp)
                     Spacer(Modifier.height(12.dp))
                 }
-            }
-        }
-
-        // ---- DNS ----
-        Card {
-            SectionLabel("Deuxième protection : le DNS")
-            Spacer(Modifier.height(8.dp))
-            Text(
-                "Paramètres → Connexions → Plus de paramètres → DNS privé → Nom d'hôte du fournisseur, puis colle :",
-                color = TextMain, fontSize = 13.sp, lineHeight = 19.sp,
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(DNS_HOST, color = Gold, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-            Spacer(Modifier.height(10.dp))
-            GhostButton("Copier l'adresse", Modifier.fillMaxWidth()) {
-                val cm = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                cm.setPrimaryClip(ClipData.newPlainText("DNS", DNS_HOST))
-                Toast.makeText(ctx, "Adresse copiée", Toast.LENGTH_SHORT).show()
             }
         }
 
