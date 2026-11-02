@@ -36,14 +36,24 @@ data class Habit(
     val created: Long = System.currentTimeMillis(),
 )
 
+/** Une séance de sport : corde à sauter ou pompes (les anciennes courses restent en « course »). */
 data class Run(
     val id: String,
     val date: Long,
-    val km: Double,
-    val minutes: Int,
-    val feeling: Int,
+    val km: Double = 0.0,
+    val minutes: Int = 0,
+    val feeling: Int = 0,
     val note: String = "",
-)
+    val kind: String = KIND_CORDE,
+    val count: Int = 0,   // nombre de pompes (ou de sauts)
+    val sets: Int = 0,    // nombre de séries
+) {
+    companion object {
+        const val KIND_CORDE = "corde"
+        const val KIND_POMPES = "pompes"
+        const val KIND_COURSE = "course"
+    }
+}
 
 data class DayLog(
     val day: String, // "yyyy-MM-dd"
@@ -86,6 +96,7 @@ data class AppData(
     val protectOn: Boolean = false,
     val unlockRequestedAt: Long = 0L,
     val unlockUntil: Long = 0L,
+    val schema: Int = SCHEMA,
     val lastModified: Long = System.currentTimeMillis(),
 ) {
     fun toJson(): JSONObject = JSONObject().apply {
@@ -113,7 +124,7 @@ data class AppData(
         })
         put("runs", arr(runs) { r ->
             JSONObject().put("id", r.id).put("date", r.date).put("km", r.km).put("minutes", r.minutes)
-                .put("feeling", r.feeling).put("note", r.note)
+                .put("feeling", r.feeling).put("note", r.note).put("kind", r.kind).put("count", r.count).put("sets", r.sets)
         })
         put("days", arr(days) { d ->
             JSONObject().put("day", d.day).put("mood", d.mood).put("gratitude", d.gratitude)
@@ -130,15 +141,18 @@ data class AppData(
         put("protectOn", protectOn)
         put("unlockRequestedAt", unlockRequestedAt)
         put("unlockUntil", unlockUntil)
+        put("schema", schema)
         put("lastModified", lastModified)
     }
 
     companion object {
+        const val SCHEMA = 3
+
         fun defaultHabits() = listOf(
             Habit("h_priere", "Prière du matin", "🙏"),
             Habit("h_bible", "Lecture de la Bible", "📖"),
-            Habit("h_jogging", "Jogging", "🏃"),
-            Habit("h_trading", "Respecter mon plan de trading", "📈"),
+            Habit("h_corde", "Corde à sauter", "🪢"),
+            Habit("h_pompes", "Pompes", "💪"),
             Habit("h_lecture", "Lire 10 pages", "📚"),
         )
 
@@ -182,7 +196,8 @@ data class AppData(
                 } else defaultHabits(),
                 runs = list(o, "runs") { r ->
                     Run(r.getString("id"), r.optLong("date"), r.optDouble("km", 0.0), r.optInt("minutes"),
-                        r.optInt("feeling"), r.optString("note"))
+                        r.optInt("feeling"), r.optString("note"), r.optString("kind", Run.KIND_COURSE),
+                        r.optInt("count"), r.optInt("sets"))
                 },
                 days = list(o, "days") { x ->
                     DayLog(x.getString("day"), x.optInt("mood"), x.optString("gratitude"), x.optString("victory"), x.optString("text"))
@@ -197,6 +212,7 @@ data class AppData(
                 protectOn = o.optBoolean("protectOn", false),
                 unlockRequestedAt = o.optLong("unlockRequestedAt"),
                 unlockUntil = o.optLong("unlockUntil"),
+                schema = o.optInt("schema", 2),
                 lastModified = o.optLong("lastModified", 0L),
             )
         }

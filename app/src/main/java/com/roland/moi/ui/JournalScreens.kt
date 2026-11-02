@@ -70,7 +70,7 @@ fun JournalListScreen(d: AppData, nav: Nav) {
 
 private data class Stats(
     val libertyDays: Int, val temptations: Int, val resisted: Int,
-    val runs: Int, val km: Double, val habitPct: Int, val avgMood: Double, val journalDays: Int,
+    val runs: Int, val pompes: Int, val corde: Int, val habitPct: Int, val avgMood: Double, val journalDays: Int,
     val achievements: List<String>,
 )
 
@@ -87,7 +87,8 @@ private fun stats(d: AppData, from: Long, to: Long): Stats {
         temptations = d.temptations.count { it in from until to },
         resisted = 0,
         runs = d.runs.count { it.date in from until to },
-        km = d.runs.filter { it.date in from until to }.sumOf { it.km },
+        pompes = d.runs.filter { it.date in from until to && it.kind == "pompes" }.sumOf { it.count },
+        corde = d.runs.filter { it.date in from until to && it.kind == "corde" }.sumOf { it.minutes },
         habitPct = if (habitTotal == 0) 0 else habitDone * 100 / habitTotal,
         avgMood = if (logs.isEmpty()) 0.0 else logs.map { it.mood }.average(),
         journalDays = d.days.count { it.day in dayKeys },
@@ -105,7 +106,9 @@ private fun StatsCard(s: Stats) {
         Spacer(Modifier.height(8.dp))
         StatLine("🛡️", "Liberté", "${s.libertyDays} jours")
         StatLine("⚔️", "Tentations repoussées par le Bouclier", "${s.temptations}")
-        StatLine("🏃", "Joggings", "${s.runs} · ${"%.1f".format(s.km).replace('.', ',')} km")
+        StatLine("🔥", "Séances de sport", "${s.runs}")
+        StatLine("💪", "Pompes", "${s.pompes}")
+        StatLine("🪢", "Corde à sauter", "${s.corde} min")
         StatLine("✅", "Habitudes tenues", "${s.habitPct} %")
         StatLine("📓", "Pages de journal", "${s.journalDays}")
         if (s.avgMood > 0) StatLine(MOODS[(s.avgMood.toInt() - 1).coerceIn(0, 4)], "Humeur moyenne", "%.1f / 5".format(s.avgMood).replace('.', ','))

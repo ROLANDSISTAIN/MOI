@@ -68,6 +68,12 @@ enum class Section(
         tags = listOf("Trading", "Vie", "Relations", "Argent", "Foi", "Travail"), tagLabel = "Domaine",
         empty = "Chaque erreur vaut de l'or si tu en tires la leçon.",
     ),
+    LIVRES(
+        "livres", "Livres à lire", "📚", "Ma bibliothèque : à lire, en cours, lus",
+        "Titre et auteur", "Pourquoi le lire · mes notes",
+        tags = listOf("En cours", "À lire", "Lu"), tagLabel = "Statut",
+        empty = "Ajoute les livres que tu veux lire, et note ce que tu en retiens.",
+    ),
     GENS(
         "gens", "Les gens qui comptent", "🤝", "Les personnes importantes pour moi",
         "Nom", "Ce qu'il ou elle représente pour moi",

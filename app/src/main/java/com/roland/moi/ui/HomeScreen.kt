@@ -140,17 +140,20 @@ fun HomeScreen(d: AppData, shieldOn: Boolean, nav: Nav, onTab: (Int) -> Unit) {
 
         // ---- Sport ----
         Card(Modifier.clickable { onTab(3) }) {
-            SectionLabel("Jogging du matin")
+            SectionLabel("Sport du matin")
             Spacer(Modifier.height(8.dp))
+            val todays = d.runs.filter { Dates.dayKey(it.date) == today }
+            val p = todays.filter { it.kind == com.roland.moi.data.Run.KIND_POMPES }.sumOf { it.count }
+            val c = todays.filter { it.kind == com.roland.moi.data.Run.KIND_CORDE }.sumOf { it.minutes }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("🏃", fontSize = 30.sp)
+                Text("🪢", fontSize = 28.sp)
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
-                        if (runToday) "Fait aujourd'hui ✓" else "Pas encore aujourd'hui",
+                        if (runToday) "Aujourd'hui : $c min de corde · $p pompes" else "Pas encore de sport aujourd'hui",
                         color = if (runToday) Gold else TextMain, fontSize = 15.sp,
                     )
-                    Text("$runStreak matin${if (runStreak > 1) "s" else ""} d'affilée", color = TextDim, fontSize = 13.sp)
+                    Text("$runStreak jour${if (runStreak > 1) "s" else ""} d'affilée 🔥", color = TextDim, fontSize = 13.sp)
                 }
             }
         }

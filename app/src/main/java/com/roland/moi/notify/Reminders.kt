@@ -18,7 +18,7 @@ import com.roland.moi.data.Store
 import com.roland.moi.ui.MainActivity
 import java.util.Calendar
 
-/** Notifications du matin : citation du jour, rappel jogging, capsule à ouvrir, bilan du dimanche. */
+/** Notifications du matin : citation du jour, rappel sport, capsule à ouvrir, bilan du dimanche. */
 object Reminders {
     private const val CHANNEL = "moi_matin"
     const val QUOTE = "quote"
@@ -73,7 +73,7 @@ object Reminders {
             }
             SPORT -> {
                 if (d.runs.none { Dates.dayKey(it.date) == Dates.dayKey() }) {
-                    show(c, 2, "🏃 C'est l'heure du jogging", "Un matin de plus. Mets tes chaussures, le reste suivra.")
+                    show(c, 2, "💪 C'est l'heure du sport", "Corde à sauter et pompes. Un matin de plus, le reste suivra.")
                 }
             }
         }
