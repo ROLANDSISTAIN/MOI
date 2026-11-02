@@ -34,18 +34,14 @@ import com.roland.moi.data.Store
 import com.roland.moi.shield.ShieldActivity
 
 @Composable
-fun ShieldSettingsScreen(d: AppData, shieldOn: Boolean) {
+fun ShieldSettingsScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
     val ctx = LocalContext.current
     var message by remember { mutableStateOf(d.shieldMessage) }
     var verse by remember { mutableStateOf(d.shieldVerse) }
     var delay by remember { mutableFloatStateOf(d.shieldDelaySec.toFloat()) }
     val changed = message != d.shieldMessage || verse != d.shieldVerse || delay.toInt() != d.shieldDelaySec
 
-    Column(
-        Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Text("Le Bouclier", color = Gold, fontSize = 28.sp, fontFamily = Serif)
+    Page("Le Bouclier", onBack = { nav.back() }) {
 
         Card {
             SectionLabel("État")

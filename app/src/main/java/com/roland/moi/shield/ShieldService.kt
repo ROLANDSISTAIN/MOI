@@ -11,11 +11,13 @@ import com.roland.moi.data.Store
 /**
  * Le Bouclier : lit uniquement la barre d'adresse et ce qui est tapé dans les navigateurs.
  * Rien n'est enregistré à part l'heure de la tentation, et rien ne quitte le téléphone.
+ * Il protège aussi MOI contre la désinstallation quand la protection est active.
  */
 class ShieldService : AccessibilityService() {
 
     private var cooldownUntil = 0L
     private var lastScan = 0L
+    private var lastGuardScan = 0L
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -33,8 +35,14 @@ class ShieldService : AccessibilityService() {
         e ?: return
         val pkg = e.packageName?.toString() ?: return
         if (pkg == packageName) return
-        if (pkg !in Keywords.browsers) return
         val now = System.currentTimeMillis()
+
+        if (Protection.isGuardedPackage(pkg)) {
+            guard(now)
+            return
+        }
+
+        if (pkg !in Keywords.browsers) return
         if (now < cooldownUntil || ShieldActivity.showing) return
 
         // Option : bloquer les navigateurs avec VPN intégré (ils contournent le DNS)
@@ -58,6 +66,32 @@ class ShieldService : AccessibilityService() {
         val root = rootInActiveWindow ?: return
         scanRoot(root)?.let { trigger(it) }
     }
+
+    // ---------- Protection anti-désinstallation ----------
+
+    private fun guard(now: Long) {
+        if (!Protection.isActive()) return
+        if (now - lastGuardScan < 400) return
+        lastGuardScan = now
+        val root = rootInActiveWindow ?: return
+        val texts = ArrayList<String>()
+        val stack = ArrayDeque<AccessibilityNodeInfo>()
+        stack.add(root)
+        var visited = 0
+        while (stack.isNotEmpty() && visited < 400) {
+            val n = stack.removeLast()
+            visited++
+            n.text?.toString()?.let { if (it.isNotBlank()) texts.add(Keywords.normalize(it.trim())) }
+            for (i in 0 until n.childCount) n.getChild(i)?.let { stack.add(it) }
+        }
+        if (Protection.screenIsDangerous(texts)) {
+            performGlobalAction(GLOBAL_ACTION_BACK)
+            performGlobalAction(GLOBAL_ACTION_HOME)
+            startActivity(Intent(this, ProtectActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        }
+    }
+
+    // ---------- Bouclier ----------
 
     private fun scanRoot(root: AccessibilityNodeInfo): String? {
         for (id in Keywords.urlBarIds) {

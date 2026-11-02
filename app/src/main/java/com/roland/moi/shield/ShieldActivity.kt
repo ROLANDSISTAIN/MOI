@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.roland.moi.data.Quotes
 import com.roland.moi.data.Store
 import com.roland.moi.ui.Black
 import com.roland.moi.ui.GhostButton
@@ -94,6 +95,13 @@ private fun ShieldScreen(onDone: () -> Unit) {
         if (d.shieldVerse.isNotBlank()) {
             Spacer(Modifier.height(24.dp))
             Text(d.shieldVerse, color = Gold, fontSize = 16.sp, lineHeight = 23.sp, fontStyle = FontStyle.Italic, textAlign = TextAlign.Center)
+        }
+        val letter = remember { Quotes.forShield(d) }
+        if (letter != null) {
+            Spacer(Modifier.height(28.dp))
+            Text(letter.source.uppercase(), color = Gold, fontSize = 11.sp, letterSpacing = 2.sp)
+            Spacer(Modifier.height(8.dp))
+            Text(letter.text, color = TextMain, fontSize = 16.sp, lineHeight = 23.sp, fontFamily = Serif, textAlign = TextAlign.Center)
         }
         Spacer(Modifier.height(44.dp))
         Text("Respire. Lève-toi. Bois un verre d'eau. Change de pièce.", color = TextDim, fontSize = 13.sp, textAlign = TextAlign.Center)

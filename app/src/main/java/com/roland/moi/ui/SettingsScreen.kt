@@ -39,7 +39,7 @@ import kotlinx.coroutines.launch
 private enum class Pending { NONE, BACKUP, RESTORE }
 
 @Composable
-fun SettingsScreen(onChangePin: () -> Unit) {
+fun SettingsScreen(d: com.roland.moi.data.AppData, nav: Nav, onChangePin: () -> Unit) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
     var refresh by remember { mutableIntStateOf(0) }
@@ -47,6 +47,7 @@ fun SettingsScreen(onChangePin: () -> Unit) {
     var pending by remember { mutableStateOf(Pending.NONE) }
     var confirmRestore by remember { mutableStateOf(false) }
     var bio by remember { mutableStateOf(PinManager.biometricEnabled(ctx)) }
+    var pickQuote by remember { mutableStateOf(false) }
 
     fun toast(s: String) = Toast.makeText(ctx, s, Toast.LENGTH_LONG).show()
 
@@ -87,11 +88,31 @@ fun SettingsScreen(onChangePin: () -> Unit) {
         }
     }
 
-    Column(
-        Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Text("Réglages", color = Gold, fontSize = 28.sp, fontFamily = Serif)
+    Page("Réglages", onBack = { nav.back() }) {
+        ListRow("🛡️", "Le Bouclier", "Message, verset, délai, navigateurs VPN") { nav.go(Route.ShieldSettings) }
+        ListRow(
+            "👑", "Protection anti-désinstallation",
+            if (d.protectOn) "Active" else "Désactivée",
+        ) { nav.go(Route.Protection) }
+
+        Card {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    SectionLabel("Parole du jour")
+                    Spacer(Modifier.height(4.dp))
+                    Text(if (d.quoteOn) "Notification chaque matin à ${com.roland.moi.data.Dates.time(d.quoteTime)}" else "Désactivée",
+                        color = TextMain, fontSize = 14.sp)
+                }
+                androidx.compose.material3.TextButton(onClick = { pickQuote = true }) { Text("Heure", color = Gold) }
+                Switch(
+                    checked = d.quoteOn,
+                    onCheckedChange = { on -> Store.update { it.copy(quoteOn = on) }; com.roland.moi.notify.Reminders.scheduleAll(ctx) },
+                    colors = SwitchDefaults.colors(checkedThumbColor = Black, checkedTrackColor = Gold),
+                )
+            }
+            Spacer(Modifier.height(6.dp))
+            Text("Elle te rappelle aussi tes capsules à ouvrir et ton bilan du dimanche.", color = TextDim, fontSize = 12.sp)
+        }
 
         Card {
             SectionLabel("Sauvegarde Google Drive")
@@ -140,6 +161,10 @@ fun SettingsScreen(onChangePin: () -> Unit) {
             )
         }
         Text("MOI · version ${appVersion(ctx)}", color = TextDim, fontSize = 11.sp)
+    }
+
+    if (pickQuote) TimeDialog(d.quoteTime, { pickQuote = false }) { m ->
+        Store.update { it.copy(quoteTime = m, quoteOn = true) }; com.roland.moi.notify.Reminders.scheduleAll(ctx)
     }
 
     if (confirmRestore) {
