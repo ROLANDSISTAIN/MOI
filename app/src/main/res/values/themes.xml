@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Moi" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/moi_black</item>
+        <item name="android:statusBarColor">@color/moi_black</item>
+        <item name="android:navigationBarColor">@color/moi_black</item>
+    </style>
+    <color name="moi_black">#0B0B0C</color>
+    <color name="moi_gold">#D4AF37</color>
+</resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MOI</string>
+    <string name="shield_label">MOI — Bouclier</string>
+    <string name="shield_description">Le Bouclier de MOI surveille ce que tu tapes dans tes navigateurs et t\'affiche ton message quand une recherche à caractère sexuel est détectée. Rien n\'est envoyé nulle part.</string>
+</resources>
