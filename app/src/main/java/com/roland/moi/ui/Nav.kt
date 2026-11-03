@@ -16,6 +16,9 @@ sealed class Route {
     data class Review(val week: String) : Route()
     data object Reviews : Route()
     data class Month(val start: Long) : Route()
+    data object Sos : Route()
+    data object Pushups : Route()
+    data class Year(val year: Int) : Route()
 }
 
 /** Petite pile de navigation : les onglets sont la base, les écrans s'empilent par-dessus. */

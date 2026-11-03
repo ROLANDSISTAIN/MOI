@@ -33,6 +33,7 @@ fun MaVieScreen(d: AppData, nav: Nav) {
         Tile(s.emoji, s.title, if (n == 0) "" else "$n", Route.Section(s.key))
     } + listOf(
         Tile("📓", "Mon journal", if (d.days.isEmpty()) "" else "${d.days.size}", Route.JournalList),
+        Tile("✨", "Mon année", "${java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)}", Route.Year(java.util.Calendar.getInstance().get(java.util.Calendar.YEAR))),
         Tile("📊", "Mes bilans", if (d.reviews.isEmpty()) "" else "${d.reviews.size}", Route.Reviews),
         Tile("🛡️", "Liberté", "${((System.currentTimeMillis() - d.streakStart) / DAY_MS)} j", Route.Liberte),
     )

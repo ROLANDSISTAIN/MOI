@@ -37,6 +37,13 @@ enum class Section(
         hasDue = true, hasSteps = true, doneLabel = "Atteint",
         empty = "Fixe-toi un but, découpe-le en étapes, coche-les une par une.",
     ),
+    DECISIONS(
+        "decisions", "Mes décisions", "⚖️", "Les décisions que j'ai prises, et pourquoi",
+        "Ma décision", "Pourquoi je l'ai prise, ce qu'elle change",
+        tags = listOf("Spirituel", "Personnel", "Trading / Argent", "Santé / Sport", "Relations", "Travail / Projets"), tagLabel = "Domaine",
+        hasDate = true, doneLabel = "Tenue",
+        empty = "Une décision écrite est plus forte qu'une décision pensée. Note-la, avec la date et la raison.",
+    ),
     REALISATIONS(
         "realisations", "Mes réalisations", "🏆", "Ce que j'ai déjà accompli",
         "Ce que j'ai accompli", "L'histoire derrière",

@@ -21,6 +21,7 @@ object Quotes {
                 Section.IDENTITE -> Quote(e.text.ifBlank { e.title }, "Mon identité · ${e.title}")
                 Section.VISION -> Quote(e.title + if (e.text.isNotBlank()) " — " + e.text else "", "Ma vision · ${e.tag}")
                 Section.LECONS -> Quote(e.title, "Ma leçon")
+                Section.DECISIONS -> Quote("J'ai décidé : ${e.title}", "Mes décisions · ${Dates.shortDate(e.date)}")
                 Section.LETTRES -> Quote(e.text.take(280), "Lettre à moi-même")
                 Section.REALISATIONS -> Quote("Souviens-toi : ${e.title}. Tu l'as fait.", "Mes réalisations")
                 Section.BUTS -> if (!e.done) Quote("Ton but : ${e.title}", "Mes buts") else null

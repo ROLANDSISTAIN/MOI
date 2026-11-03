@@ -90,6 +90,20 @@ fun SportScreen(d: AppData, nav: Nav) {
             }
         }
 
+        // ---- Programme pompes 30 jours ----
+        val pDay = PushupPlan.dayIndex(d)
+        ListRow(
+            emoji = "📅",
+            title = "Programme pompes 30 jours",
+            subtitle = when {
+                pDay == 0 -> "Fais le test de départ pour commencer"
+                pDay > PushupPlan.DAYS -> "Terminé 👑 — refais le test"
+                PushupPlan.isRest(pDay) -> "Jour $pDay · repos"
+                else -> "Jour $pDay · objectif ${PushupPlan.target(pDay, d.pushupMax)} pompes"
+            },
+            trailing = if (pDay in 1..PushupPlan.DAYS) "$pDay/30" else "",
+        ) { nav.go(Route.Pushups) }
+
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             SmallStat("Pompes\ncette semaine", "${pompes.filter { it.date >= weekStart }.sumOf { it.count }}", Modifier.weight(1f))
             SmallStat("Corde\ncette semaine", "${corde.filter { it.date >= weekStart }.sumOf { it.minutes }} min", Modifier.weight(1f))

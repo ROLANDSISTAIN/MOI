@@ -86,6 +86,24 @@ fun ShieldSettingsScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
         Card {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
+                    SectionLabel("Apps sociales")
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        "Facebook, Instagram, TikTok, Telegram, WhatsApp, X, Snapchat, YouTube… Le Bouclier surveille leurs recherches et les liens qu'elles ouvrent (pas tes conversations ni les publications).",
+                        color = TextDim, fontSize = 13.sp, lineHeight = 18.sp,
+                    )
+                }
+                Switch(
+                    checked = d.socialShield,
+                    onCheckedChange = { on -> Store.update { it.copy(socialShield = on) } },
+                    colors = SwitchDefaults.colors(checkedThumbColor = Black, checkedTrackColor = Gold),
+                )
+            }
+        }
+
+        Card {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
                     SectionLabel("Navigateurs avec VPN")
                     Spacer(Modifier.height(6.dp))
                     Text(

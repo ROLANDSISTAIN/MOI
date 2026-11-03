@@ -312,7 +312,13 @@ fun EntryEditScreen(d: AppData, key: String, id: String?, nav: Nav) {
             val e = (old ?: Entry(id = Store.newId(), section = s.key)).copy(
                 title = title.trim().ifBlank { text.trim().take(40) },
                 text = text.trim(), tag = tag, date = date, dueDate = due, photo = photo, steps = steps.toList(),
-            )
+            ).let { e ->
+                // Un livre passé en « Lu » garde la date de fin de lecture (pour « Mon année »)
+                if (s == Section.LIVRES) {
+                    if (tag == "Lu") e.copy(done = true, doneDate = if (e.doneDate > 0) e.doneDate else System.currentTimeMillis())
+                    else e.copy(done = false, doneDate = 0L)
+                } else e
+            }
             Store.saveEntry(e)
             if (old == null) nav.replace(Route.EntryView(e.id)) else nav.back()
         }

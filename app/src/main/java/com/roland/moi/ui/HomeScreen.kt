@@ -79,6 +79,22 @@ fun HomeScreen(d: AppData, shieldOn: Boolean, nav: Nav, onTab: (Int) -> Unit) {
             }
         }
 
+        // ---- SOS ----
+        Row(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Danger.copy(alpha = 0.14f))
+                .border(1.dp, Danger.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
+                .clickable { nav.go(Route.Sos) }.padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("🆘", fontSize = 22.sp)
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text("Je suis tenté", color = TextMain, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                Text("1 minute pour reprendre le contrôle", color = TextDim, fontSize = 12.sp)
+            }
+            Text("›", color = TextDim, fontSize = 22.sp)
+        }
+
         // ---- Parole du jour ----
         Card {
             SectionLabel("Ta parole du jour")

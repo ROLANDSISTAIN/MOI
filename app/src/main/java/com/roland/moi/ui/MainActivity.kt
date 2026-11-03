@@ -137,6 +137,9 @@ class MainActivity : FragmentActivity() {
             is Route.Review -> ReviewScreen(d, r.week, nav)
             Route.Reviews -> ReviewsScreen(d, nav)
             is Route.Month -> MonthScreen(d, r.start, nav)
+            Route.Sos -> SosScreen(d, nav)
+            Route.Pushups -> PushupProgramScreen(d, nav)
+            is Route.Year -> YearScreen(d, r.year, nav)
         }
     }
 

@@ -50,6 +50,32 @@ object Keywords {
         return wordRegex.find(spaced)?.groupValues?.get(2)
     }
 
+    /** Seulement les sites (pour les liens ouverts depuis les apps sociales). */
+    fun matchDomain(raw: String?): String? {
+        if (raw.isNullOrBlank()) return null
+        val t = normalize(raw.trim())
+        if (t.contains(' ') || !t.contains('.')) return null // ce n'est pas une adresse
+        return domainParts.firstOrNull { t.contains(it) }
+    }
+
+    /** Apps sociales : on surveille leurs recherches et les liens qu'elles ouvrent, pas les publications. */
+    val socialApps = setOf(
+        "com.facebook.katana", "com.facebook.lite", "com.facebook.orca", "com.facebook.mlite",
+        "com.instagram.android", "com.instagram.lite",
+        "com.zhiliaoapp.musically", "com.ss.android.ugc.trill", "com.zhiliaoapp.musically.go",
+        "org.telegram.messenger", "org.telegram.messenger.web", "org.thunderdog.challegram", "org.telegram.plus",
+        "com.whatsapp", "com.whatsapp.w4b",
+        "com.twitter.android", "com.snapchat.android", "com.reddit.frontpage",
+        "com.pinterest", "com.google.android.youtube", "com.linkedin.android",
+    )
+
+    private val searchHints = listOf("search", "query", "recherch", "cherch", "explore", "find")
+
+    fun isSearchField(viewId: String?, hint: String?): Boolean {
+        val v = (viewId ?: "").lowercase() + " " + normalize(hint ?: "")
+        return searchHints.any { v.contains(it) }
+    }
+
     /** Navigateurs connus. Les autres apps ne sont pas surveillées. */
     val browsers = setOf(
         "com.android.chrome", "com.chrome.beta", "com.chrome.dev", "com.chrome.canary",

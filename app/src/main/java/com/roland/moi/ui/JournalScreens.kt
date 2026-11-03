@@ -94,7 +94,7 @@ private fun stats(d: AppData, from: Long, to: Long): Stats {
         journalDays = d.days.count { it.day in dayKeys },
         achievements = d.entries.filter {
             (it.section == "realisations" && it.date in from until to) ||
-                (it.done && it.doneDate in from until to && it.section in listOf("buts", "foi", "peurs", "desirs"))
+                (it.done && it.doneDate in from until to && it.section in listOf("buts", "foi", "peurs", "desirs", "livres"))
         }.map { it.title },
     )
 }

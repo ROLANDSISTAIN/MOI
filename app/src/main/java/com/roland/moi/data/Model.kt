@@ -82,6 +82,11 @@ data class AppData(
     val shieldVerse: String = "« Fuyez la débauche. » — 1 Corinthiens 6:18",
     val shieldDelaySec: Int = 30,
     val blockVpnBrowsers: Boolean = false,
+    val socialShield: Boolean = true,
+    val sosCount: Int = 0,
+    // ---- Programme pompes 30 jours ----
+    val pushupStart: Long = 0L,
+    val pushupMax: Int = 0,
     // ---- Ma vie ----
     val entries: List<Entry> = emptyList(),
     val habits: List<Habit> = defaultHabits(),
@@ -112,6 +117,10 @@ data class AppData(
         put("shieldVerse", shieldVerse)
         put("shieldDelaySec", shieldDelaySec)
         put("blockVpnBrowsers", blockVpnBrowsers)
+        put("socialShield", socialShield)
+        put("sosCount", sosCount)
+        put("pushupStart", pushupStart)
+        put("pushupMax", pushupMax)
         put("entries", arr(entries) { e ->
             JSONObject().put("id", e.id).put("section", e.section).put("title", e.title).put("text", e.text)
                 .put("tag", e.tag).put("date", e.date).put("dueDate", e.dueDate).put("done", e.done)
@@ -181,6 +190,10 @@ data class AppData(
                 shieldVerse = o.optString("shieldVerse", d.shieldVerse),
                 shieldDelaySec = o.optInt("shieldDelaySec", 30),
                 blockVpnBrowsers = o.optBoolean("blockVpnBrowsers", false),
+                socialShield = o.optBoolean("socialShield", true),
+                sosCount = o.optInt("sosCount", 0),
+                pushupStart = o.optLong("pushupStart", 0L),
+                pushupMax = o.optInt("pushupMax", 0),
                 entries = list(o, "entries") { e ->
                     Entry(
                         id = e.getString("id"), section = e.optString("section"), title = e.optString("title"),

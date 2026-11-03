@@ -42,6 +42,11 @@ class ShieldService : AccessibilityService() {
             return
         }
 
+        if (pkg in Keywords.socialApps) {
+            if (Store.data.value.socialShield && now >= cooldownUntil && !ShieldActivity.showing) social(e, now)
+            return
+        }
+
         if (pkg !in Keywords.browsers) return
         if (now < cooldownUntil || ShieldActivity.showing) return
 
@@ -65,6 +70,41 @@ class ShieldService : AccessibilityService() {
         lastScan = now
         val root = rootInActiveWindow ?: return
         scanRoot(root)?.let { trigger(it) }
+    }
+
+    // ---------- Apps sociales (Facebook, Instagram, TikTok, Telegram…) ----------
+
+    private var lastSocialScan = 0L
+
+    private fun social(e: AccessibilityEvent, now: Long) {
+        // 1) Ce qui est tapé dans une barre de recherche
+        if (e.eventType == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED) {
+            val src = e.source
+            val hint = if (android.os.Build.VERSION.SDK_INT >= 26) src?.hintText?.toString() else null
+            if (Keywords.isSearchField(src?.viewIdResourceName, hint)) {
+                val typed = e.text?.joinToString(" ") ?: src?.text?.toString()
+                Keywords.match(typed)?.let { trigger(it); return }
+            }
+        }
+        // 2) Les liens ouverts dans le navigateur intégré (l'adresse affichée en haut)
+        if (now - lastSocialScan < 1500) return
+        lastSocialScan = now
+        val root = rootInActiveWindow ?: return
+        var visited = 0
+        val stack = ArrayDeque<AccessibilityNodeInfo>()
+        stack.add(root)
+        while (stack.isNotEmpty() && visited < 250) {
+            val n = stack.removeLast()
+            visited++
+            val text = n.text?.toString()
+            if (text != null && text.length in 4..300) {
+                Keywords.matchDomain(text)?.let { trigger(it); return }
+                if (n.isEditable && Keywords.isSearchField(n.viewIdResourceName, null)) {
+                    Keywords.match(text)?.let { trigger(it); return }
+                }
+            }
+            for (i in 0 until n.childCount) n.getChild(i)?.let { stack.add(it) }
+        }
     }
 
     // ---------- Protection anti-désinstallation ----------
