@@ -65,6 +65,20 @@ fun HomeScreen(d: AppData, shieldOn: Boolean, nav: Nav, onTab: (Int) -> Unit) {
             IconButton(onClick = { nav.go(Route.Settings) }) { Icon(Icons.Outlined.Settings, "Réglages", tint = Gold) }
         }
 
+        // ---- Sauvegarde en retard ----
+        val ctx = androidx.compose.ui.platform.LocalContext.current
+        val stale = androidx.compose.runtime.remember(d.lastModified) { com.roland.moi.backup.DriveBackup.isStale(ctx) }
+        if (stale) {
+            Card(Modifier.border(1.dp, Danger, RoundedCornerShape(18.dp)).clickable { nav.go(Route.Settings) }) {
+                SectionLabel("⚠️ Sauvegarde en retard")
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "Ta dernière sauvegarde Google Drive date de plus de 3 jours. Appuie ici puis sur « Sauvegarder maintenant ».",
+                    color = TextMain, fontSize = 14.sp, lineHeight = 20.sp,
+                )
+            }
+        }
+
         // ---- Parole du jour ----
         Card {
             SectionLabel("Ta parole du jour")

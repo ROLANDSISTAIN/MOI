@@ -57,7 +57,11 @@ fun SettingsScreen(d: com.roland.moi.data.AppData, nav: Nav, onChangePin: () -> 
             try {
                 val json = DriveBackup.download(token)
                 if (json == null) toast("Aucune sauvegarde trouvée sur ce compte Google")
-                else { Store.replaceAll(json); toast("Tout est revenu ✓") }
+                else {
+                    Store.replaceAll(json)
+                    val n = DriveBackup.restorePhotos(ctx, token)
+                    toast("Tout est revenu ✓" + if (n > 0) " ($n photos)" else "")
+                }
             } catch (t: Throwable) { toast("Erreur : ${t.message}") }
         } else {
             val err = DriveBackup.upload(ctx, token, Store.exportJson())
