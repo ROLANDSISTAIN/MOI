@@ -32,7 +32,7 @@ private fun yearStart(y: Int): Long = Calendar.getInstance().apply {
 
 private fun yearOf(t: Long) = Calendar.getInstance().apply { timeInMillis = t }.get(Calendar.YEAR)
 
-private class YearStats(d: AppData, y: Int) {
+private class YearStats(private val d: AppData, y: Int) {
     private val from = yearStart(y)
     private val to = yearStart(y + 1)
     private fun inYear(t: Long) = t in from until to
