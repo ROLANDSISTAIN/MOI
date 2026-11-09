@@ -104,6 +104,16 @@ fun SportScreen(d: AppData, nav: Nav) {
             trailing = if (pDay in 1..PushupPlan.DAYS) "$pDay/30" else "",
         ) { nav.go(Route.Pushups) }
 
+        // ---- Programme ventre plat ----
+        val vWeek = VentrePlan.week(d)
+        ListRow(
+            emoji = "🔥",
+            title = "Programme ventre plat",
+            subtitle = if (vWeek == 0) "Corde, alimentation et mesures : commence ici"
+            else "Semaine $vWeek · ${VentrePlan.doneThisWeek(d)}/${VentrePlan.seance(vWeek).perWeek} séances de corde",
+            trailing = d.bodyLogs.lastOrNull { it.weight > 0 }?.let { fmtNum(it.weight) + " kg" } ?: "",
+        ) { nav.go(Route.Ventre) }
+
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             SmallStat("Pompes\ncette semaine", "${pompes.filter { it.date >= weekStart }.sumOf { it.count }}", Modifier.weight(1f))
             SmallStat("Corde\ncette semaine", "${corde.filter { it.date >= weekStart }.sumOf { it.minutes }} min", Modifier.weight(1f))

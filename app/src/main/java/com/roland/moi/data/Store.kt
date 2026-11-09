@@ -40,6 +40,9 @@ object Store {
             val books = if (d.entries.none { it.section == Section.LIVRES.key }) starterBooks() else emptyList()
             d = d.copy(habits = habits, entries = d.entries + books)
         }
+        if (d.schema < 4) {
+            if (d.habits.none { it.id == "h_assiette" }) d = d.copy(habits = d.habits + Habit("h_assiette", "Assiette équilibrée", "🥗"))
+        }
         return d.copy(schema = AppData.SCHEMA)
     }
 
@@ -146,6 +149,15 @@ object Store {
     }
 
     fun deleteRun(id: String) = update { d -> d.copy(runs = d.runs.filterNot { it.id == id }) }
+
+    // ---------- Mesures du corps ----------
+
+    /** Une seule mesure par jour : la nouvelle remplace celle du même jour. */
+    fun saveBody(b: BodyLog) = update { d ->
+        d.copy(bodyLogs = (d.bodyLogs.filterNot { it.day == b.day } + b).sortedBy { it.day })
+    }
+
+    fun deleteBody(day: String) = update { d -> d.copy(bodyLogs = d.bodyLogs.filterNot { it.day == day }) }
 
     // ---------- Journal & bilans ----------
 

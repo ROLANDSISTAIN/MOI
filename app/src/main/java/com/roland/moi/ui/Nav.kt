@@ -18,6 +18,7 @@ sealed class Route {
     data class Month(val start: Long) : Route()
     data object Sos : Route()
     data object Pushups : Route()
+    data object Ventre : Route()
     data class Year(val year: Int) : Route()
 }
 

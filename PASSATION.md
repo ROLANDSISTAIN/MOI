@@ -15,7 +15,7 @@ MOI est « l'application de ma vie » : un espace privé, verrouillé, où Rolan
 
 - **Ma vie** : identité, vision, buts, décisions, réalisations, peurs, désirs, foi, leçons, livres, personnes qui comptent, moments forts, lettres à soi-même, capsule temporelle
 - **Habitudes** quotidiennes avec séries 🔥
-- **Sport** : corde à sauter et pompes, avec un programme de 30 jours
+- **Sport** : corde à sauter et pompes, avec un programme pompes de 30 jours et un programme **ventre plat** (corde en intervalles, chrono sonore, assiette, mesures poids / tour de taille)
 - **Journal** du jour, **bilans** de la semaine et du mois, **Mon année**
 - **Liberté** : un compteur de jours et le **Bouclier**, qui détecte les recherches et sites à caractère sexuel dans les navigateurs et les apps sociales, puis affiche un écran plein
 
@@ -32,7 +32,7 @@ Style : **noir élégant + doré** (`#0B0B0C` / `#D4AF37`), titres en serif. Tou
 | **Accueil** | Alerte sauvegarde en retard · 🆘 Je suis tenté · Parole du jour · Capsules à ouvrir · Bilan du dimanche · Journal du jour · Habitudes à cocher · Sport du matin · Buts en cours · Liberté (discret) · ⚙️ Réglages |
 | **Ma vie** (onglet) | 14 sections (voir `Sections.kt`) + Mon journal + ✨ Mon année + Mes bilans + Liberté |
 | **Habitudes** (onglet) | Par défaut : Prière du matin, Lecture de la Bible, Corde à sauter, Pompes, Lire 10 pages. Modifiables. Série, record, 7 derniers jours (on peut cocher un jour passé). |
-| **Sport** (onglet) | Boutons 🪢 Corde (minutes, sauts) et 💪 Pompes (total, séries). Une séance coche l'habitude correspondante. Programme pompes 30 jours, stats de la semaine et totales, graphiques, records, rappel du matin. |
+| **Sport** (onglet) | Boutons 🪢 Corde (minutes, sauts) et 💪 Pompes (total, séries). Une séance coche l'habitude correspondante. Programme pompes 30 jours, **programme ventre plat** (`VentreScreen.kt` : semaines 1-2 = 10 × 30 s / 30 s, 3×/sem ; ensuite 13 × 1 min / 30 s, 4×/sem ; chrono qui sonne et garde l'écran allumé ; renfo ; assiette ; mesures poids + tour de taille), stats de la semaine et totales, graphiques, records, rappel du matin. |
 | **🆘 Je suis tenté** | Respiration 4-4-6 × 4 cycles → lettre à soi-même + message + verset → « 20 pompes » (enregistrées) → victoire comptée |
 | **Bouclier** | Service d'accessibilité. Navigateurs : barre d'adresse + texte tapé. Apps sociales : uniquement les champs de recherche et les adresses web affichées (pas les conversations ni les publications). Option : bloquer les navigateurs à VPN intégré. Écran plein avec délai réglable (10 à 120 s), message, verset et lettre à soi-même. |
 | **Protection anti-désinstallation** | Réglages → Protection. Le Bouclier bloque les écrans « désinstaller / forcer l'arrêt / désactiver » de MOI dans Paramètres. Déverrouillage : attendre 24 h après la demande **ou** recopier la phrase d'engagement → fenêtre de 15 min. Option administrateur de l'appareil. |
@@ -78,7 +78,7 @@ app/src/main/java/com/roland/moi/
 
 ### Données
 - Fichier : `filesDir/moi_data.json`, écrit de façon atomique (`.tmp` puis renommage)
-- `AppData.SCHEMA = 3`. **Pour toute évolution** du format : incrémenter `SCHEMA` et ajouter une étape dans `Store.migrate()`. Tous les champs se lisent avec `opt*()` et une valeur par défaut, pour que les anciennes sauvegardes restent lisibles.
+- `AppData.SCHEMA = 4` (v4 : `fitStart`, `bodyLogs`, habitude « Assiette équilibrée 🥗 » ajoutée). **Pour toute évolution** du format : incrémenter `SCHEMA` et ajouter une étape dans `Store.migrate()`. Tous les champs se lisent avec `opt*()` et une valeur par défaut, pour que les anciennes sauvegardes restent lisibles.
 - Une séance de sport est une `Run` avec `kind` = `corde` | `pompes` | `course` (ancien).
 - Les livres en « Lu » reçoivent automatiquement un `doneDate` (utilisé par Mon année).
 
@@ -168,3 +168,4 @@ Consommation vérifiée : MOI n'apparaît pas dans la liste d'utilisation de la 
 | 5 | Sauvegarde des photos sur Drive + alerte sauvegarde en retard |
 | 6 | (échec de compilation, Mon année) |
 | 7 | 🆘 Je suis tenté, Bouclier apps sociales, programme pompes 30 jours, Mon année, Mes décisions |
+| 8 | Programme ventre plat (corde en intervalles + chrono, assiette, mesures), habitude Assiette équilibrée |

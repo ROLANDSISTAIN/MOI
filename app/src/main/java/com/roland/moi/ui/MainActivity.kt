@@ -139,6 +139,7 @@ class MainActivity : FragmentActivity() {
             is Route.Month -> MonthScreen(d, r.start, nav)
             Route.Sos -> SosScreen(d, nav)
             Route.Pushups -> PushupProgramScreen(d, nav)
+            Route.Ventre -> VentreScreen(d, nav)
             is Route.Year -> YearScreen(d, r.year, nav)
         }
     }

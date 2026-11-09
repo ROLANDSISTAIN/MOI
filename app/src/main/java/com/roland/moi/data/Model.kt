@@ -55,6 +55,13 @@ data class Run(
     }
 }
 
+/** Une mesure du corps : poids (kg) et tour de taille (cm). 0 = non renseigné. */
+data class BodyLog(
+    val day: String, // "yyyy-MM-dd"
+    val weight: Double = 0.0,
+    val waist: Double = 0.0,
+)
+
 data class DayLog(
     val day: String, // "yyyy-MM-dd"
     val mood: Int = 0,
@@ -87,6 +94,9 @@ data class AppData(
     // ---- Programme pompes 30 jours ----
     val pushupStart: Long = 0L,
     val pushupMax: Int = 0,
+    // ---- Programme ventre plat ----
+    val fitStart: Long = 0L,
+    val bodyLogs: List<BodyLog> = emptyList(),
     // ---- Ma vie ----
     val entries: List<Entry> = emptyList(),
     val habits: List<Habit> = defaultHabits(),
@@ -121,6 +131,8 @@ data class AppData(
         put("sosCount", sosCount)
         put("pushupStart", pushupStart)
         put("pushupMax", pushupMax)
+        put("fitStart", fitStart)
+        put("bodyLogs", arr(bodyLogs) { b -> JSONObject().put("day", b.day).put("weight", b.weight).put("waist", b.waist) })
         put("entries", arr(entries) { e ->
             JSONObject().put("id", e.id).put("section", e.section).put("title", e.title).put("text", e.text)
                 .put("tag", e.tag).put("date", e.date).put("dueDate", e.dueDate).put("done", e.done)
@@ -155,7 +167,7 @@ data class AppData(
     }
 
     companion object {
-        const val SCHEMA = 3
+        const val SCHEMA = 4
 
         fun defaultHabits() = listOf(
             Habit("h_priere", "Prière du matin", "🙏"),
@@ -163,6 +175,7 @@ data class AppData(
             Habit("h_corde", "Corde à sauter", "🪢"),
             Habit("h_pompes", "Pompes", "💪"),
             Habit("h_lecture", "Lire 10 pages", "📚"),
+            Habit("h_assiette", "Assiette équilibrée", "🥗"),
         )
 
         private fun <T> arr(list: List<T>, f: (T) -> JSONObject) = JSONArray().apply { list.forEach { put(f(it)) } }
@@ -194,6 +207,10 @@ data class AppData(
                 sosCount = o.optInt("sosCount", 0),
                 pushupStart = o.optLong("pushupStart", 0L),
                 pushupMax = o.optInt("pushupMax", 0),
+                fitStart = o.optLong("fitStart", 0L),
+                bodyLogs = list(o, "bodyLogs") { b ->
+                    BodyLog(b.getString("day"), b.optDouble("weight", 0.0), b.optDouble("waist", 0.0))
+                },
                 entries = list(o, "entries") { e ->
                     Entry(
                         id = e.getString("id"), section = e.optString("section"), title = e.optString("title"),
