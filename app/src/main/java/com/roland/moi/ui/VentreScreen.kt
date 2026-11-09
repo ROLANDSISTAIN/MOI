@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.LinearProgressIndicator
@@ -37,33 +38,58 @@ import com.roland.moi.data.Dates
 import com.roland.moi.data.Run
 import com.roland.moi.data.Store
 import kotlinx.coroutines.delay
+import java.util.Calendar
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 
-/** Programme « ventre plat » : corde à sauter en intervalles + renforcement + alimentation + mesures. */
+/** Programme « perte de poids » : corde à sauter en intervalles + renforcement + alimentation + mesures. */
 object VentrePlan {
-    data class Seance(val rounds: Int, val workSec: Int, val restSec: Int, val perWeek: Int) {
+    /** Jours de la semaine (constantes Calendar), dans l'ordre lundi → dimanche. */
+    val WEEK = listOf(
+        Calendar.MONDAY to "Lundi", Calendar.TUESDAY to "Mardi", Calendar.WEDNESDAY to "Mercredi",
+        Calendar.THURSDAY to "Jeudi", Calendar.FRIDAY to "Vendredi", Calendar.SATURDAY to "Samedi", Calendar.SUNDAY to "Dimanche",
+    )
+
+    fun dayName(dow: Int) = WEEK.firstOrNull { it.first == dow }?.second ?: ""
+
+    data class Seance(val rounds: Int, val workSec: Int, val restSec: Int) {
         val totalSec get() = rounds * (workSec + restSec)
         val label get() = "$rounds × ${dur(workSec)} de saut / ${dur(restSec)} de repos"
     }
 
-    /** Semaine du programme (1, 2, 3…), 0 si pas commencé. */
+    /** Semaine du programme (1, 2, 3…), comptée du lundi au dimanche. 0 si pas commencé. */
     fun week(d: AppData): Int {
         if (d.fitStart == 0L) return 0
-        val days = ((Dates.startOfDay() - Dates.startOfDay(d.fitStart)) / DAY_MS).toInt().coerceAtLeast(0)
-        return days / 7 + 1
+        val days = (Dates.startOfWeek() - Dates.startOfWeek(d.fitStart)).toDouble() / DAY_MS
+        return Math.round(days / 7).toInt().coerceAtLeast(0) + 1
     }
 
-    /** Semaines 1-2 : 10 × 30 s / 30 s, 3 fois. Ensuite : 13 × 1 min / 30 s (≈ 20 min), 4 fois. */
-    fun seance(week: Int) = if (week <= 2) Seance(10, 30, 30, 3) else Seance(13, 60, 30, 4)
+    /** Semaines 1-2 : 10 × 30 s / 30 s (10 min). Ensuite : 14 × 1 min / 30 s (21 min). */
+    fun seance(week: Int) = if (week <= 2) Seance(10, 30, 30) else Seance(14, 60, 30)
 
-    private fun weekStart(d: AppData, week: Int) = Dates.addDays(Dates.startOfDay(d.fitStart), 7 * (week - 1))
+    fun perWeek(d: AppData) = d.fitDays.size.coerceAtLeast(1)
 
-    /** Nombre de jours avec de la corde pendant la semaine en cours du programme. */
+    fun isTrainingDay(d: AppData, dow: Int = Dates.dayOfWeek()) = dow in d.fitDays
+
+    /** Le prochain jour de séance après aujourd'hui (« mercredi »…). */
+    fun nextDay(d: AppData): String {
+        val today = Dates.dayOfWeek()
+        for (i in 1..7) {
+            val dow = Dates.dayOfWeek(Dates.addDays(System.currentTimeMillis(), i))
+            if (dow in d.fitDays) return if (i == 1) "demain" else dayName(dow).lowercase()
+        }
+        return dayName(today).lowercase()
+    }
+
+    /** Nombre de jours avec de la corde depuis lundi. */
     fun doneThisWeek(d: AppData): Int {
-        val w = week(d)
-        if (w == 0) return 0
-        val ws = weekStart(d, w)
-        val we = Dates.addDays(ws, 7)
-        return d.runs.filter { it.kind == Run.KIND_CORDE && it.date >= ws && it.date < we }.map { Dates.dayKey(it.date) }.toSet().size
+        val ws = Dates.startOfWeek()
+        return d.runs.filter { it.kind == Run.KIND_CORDE && it.date >= ws }.map { Dates.dayKey(it.date) }.toSet().size
     }
 
     fun doneToday(d: AppData): Boolean {
@@ -85,13 +111,14 @@ fun VentreScreen(d: AppData, nav: Nav) {
     var confirmReset by remember { mutableStateOf(false) }
     val week = VentrePlan.week(d)
 
-    Page("Ventre plat", onBack = { nav.back() }) {
+    Page("Perte de poids", onBack = { nav.back() }) {
         if (week == 0) {
             Intro()
         } else if (timer) {
             IntervalTimer(VentrePlan.seance(week), week) { timer = false }
         } else {
             TodayCard(d, week) { timer = true }
+            DaysCard(d)
             RenfoCard()
             MeasuresCard(d) { measuring = true }
             PlateCard()
@@ -120,8 +147,9 @@ private fun Intro() {
             color = TextMain, fontSize = 14.sp, lineHeight = 20.sp,
         )
         Spacer(Modifier.height(10.dp))
-        Bullet("Semaines 1-2 : corde 3 fois par semaine, 10 × 30 s de saut / 30 s de repos")
-        Bullet("Semaines 3 et suivantes : 4 fois par semaine, 1 min de saut / 30 s de repos, environ 20 min")
+        Bullet("Corde le lundi, le mercredi et le vendredi (modifiable)")
+        Bullet("Semaines 1-2 : 10 × 30 s de saut / 30 s de repos, soit 10 min")
+        Bullet("Semaines 3 et suivantes : 14 × 1 min de saut / 30 s de repos, soit 21 min")
         Bullet("10 min de pompes, squats et gainage après la corde")
         Bullet("Une assiette équilibrée à chaque repas")
         Bullet("Poids et tour de taille une fois par semaine")
@@ -138,34 +166,115 @@ private fun Intro() {
 private fun TodayCard(d: AppData, week: Int, onStart: () -> Unit) {
     val s = VentrePlan.seance(week)
     val done = VentrePlan.doneThisWeek(d)
+    val per = VentrePlan.perWeek(d)
+    val doneToday = VentrePlan.doneToday(d)
+    val training = VentrePlan.isTrainingDay(d)
     Card {
         SectionLabel("Semaine $week" + if (week > 4) " · entretien" else "")
         Spacer(Modifier.height(8.dp))
-        Text("🪢 ${VentrePlan.dur(s.totalSec)} de corde", color = Gold, fontSize = 30.sp, fontFamily = Serif, fontWeight = FontWeight.Bold)
-        Text(s.label, color = TextMain, fontSize = 14.sp)
+        Text(
+            when {
+                doneToday -> "Séance du jour faite ✅"
+                training -> "Aujourd'hui : séance 🪢"
+                else -> "Aujourd'hui : repos 😌"
+            },
+            color = Gold, fontSize = 26.sp, fontFamily = Serif, fontWeight = FontWeight.Bold,
+        )
+        Spacer(Modifier.height(4.dp))
+        if (!training && !doneToday) {
+            Text("Prochaine séance : ${VentrePlan.nextDay(d)}. Marche un peu et soigne ton assiette.", color = TextMain, fontSize = 14.sp)
+            Spacer(Modifier.height(4.dp))
+        }
+        Text("🪢 ${VentrePlan.dur(s.totalSec)} de corde · ${s.label}", color = TextMain, fontSize = 14.sp)
         Spacer(Modifier.height(14.dp))
+        WeekRow(d)
+        Spacer(Modifier.height(12.dp))
         Row {
             Text("Séances cette semaine", color = TextDim, fontSize = 13.sp, modifier = Modifier.weight(1f))
-            Text("$done / ${s.perWeek}", color = Gold, fontSize = 13.sp)
+            Text("$done / $per", color = Gold, fontSize = 13.sp)
         }
         Spacer(Modifier.height(6.dp))
         LinearProgressIndicator(
-            progress = { (done.toFloat() / s.perWeek).coerceIn(0f, 1f) },
+            progress = { (done.toFloat() / per).coerceIn(0f, 1f) },
             modifier = Modifier.fillMaxWidth().height(6.dp), color = Gold, trackColor = Surface2, drawStopIndicator = {},
         )
         Spacer(Modifier.height(14.dp))
-        when {
-            VentrePlan.doneToday(d) -> Text("Séance du jour faite ✅ Bravo.", color = Gold, fontSize = 15.sp)
-            done >= s.perWeek -> Text("Objectif de la semaine atteint 💪 Une séance en plus reste un bonus.", color = Gold, fontSize = 14.sp)
+        if (done >= per && !doneToday) {
+            Text("Objectif de la semaine atteint 💪 Une séance en plus reste un bonus.", color = Gold, fontSize = 14.sp)
+            Spacer(Modifier.height(10.dp))
         }
-        if (VentrePlan.doneToday(d) || done >= s.perWeek) Spacer(Modifier.height(10.dp))
-        GoldButton("▶  Lancer le chrono", Modifier.fillMaxWidth(), onClick = onStart)
+        if (training || doneToday) {
+            GoldButton("▶  Lancer le chrono", Modifier.fillMaxWidth(), onClick = onStart)
+        } else {
+            GhostButton("▶  Faire une séance quand même", Modifier.fillMaxWidth(), onClick = onStart)
+        }
         Spacer(Modifier.height(4.dp))
         Text("Le chrono sonne à chaque changement et garde l'écran allumé.", color = TextDim, fontSize = 12.sp)
         if (week <= 2) {
             Spacer(Modifier.height(6.dp))
-            Text("Semaine 3 : on passe à 4 séances de ${VentrePlan.dur(VentrePlan.seance(3).totalSec)}.", color = TextDim, fontSize = 12.sp)
+            Text("À partir de la semaine 3 : séances de ${VentrePlan.dur(VentrePlan.seance(3).totalSec)}.", color = TextDim, fontSize = 12.sp)
         }
+    }
+}
+
+/** Les 7 jours de la semaine en cours : jours de séance encadrés, séances faites en doré. */
+@Composable
+private fun WeekRow(d: AppData) {
+    val ws = Dates.startOfWeek()
+    val today = Dates.dayKey()
+    val cordeDays = d.runs.filter { it.kind == Run.KIND_CORDE && it.date >= ws }.map { Dates.dayKey(it.date) }.toSet()
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        VentrePlan.WEEK.forEachIndexed { i, (dow, name) ->
+            val key = Dates.dayKey(Dates.addDays(ws, i))
+            val done = key in cordeDays
+            val planned = dow in d.fitDays
+            Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(name.take(2), color = if (key == today) Gold else TextDim, fontSize = 11.sp)
+                Spacer(Modifier.height(4.dp))
+                Box(
+                    Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(8.dp))
+                        .background(if (done) Gold else if (planned) Surface2 else Black)
+                        .border(if (key == today) 2.dp else 1.dp, if (key == today || planned) Gold else Line, RoundedCornerShape(8.dp)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(if (done) "✓" else if (planned) "🪢" else "", color = Black, fontSize = 12.sp)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DaysCard(d: AppData) {
+    Card {
+        SectionLabel("Mes jours de séance")
+        Spacer(Modifier.height(10.dp))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            VentrePlan.WEEK.forEach { (dow, name) ->
+                val on = dow in d.fitDays
+                Box(
+                    Modifier.weight(1f).clip(RoundedCornerShape(50)).background(if (on) Gold else Surface2)
+                        .clickable {
+                            Store.update {
+                                val next = if (on) it.fitDays - dow else it.fitDays + dow
+                                if (next.isEmpty()) it else it.copy(fitDays = next)
+                            }
+                        },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(name.take(2), color = if (on) Black else TextMain, fontSize = 13.sp,
+                        modifier = Modifier.padding(vertical = 8.dp))
+                }
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        Text(
+            VentrePlan.WEEK.filter { it.first in d.fitDays }.joinToString(", ") { it.second.lowercase() }
+                .replaceFirstChar { it.uppercase() } + " · ${d.fitDays.size} séance" + (if (d.fitDays.size > 1) "s" else "") + " par semaine",
+            color = TextDim, fontSize = 12.sp,
+        )
+        Spacer(Modifier.height(2.dp))
+        Text("Le rappel sport du matin te prévient ces jours-là.", color = TextDim, fontSize = 12.sp)
     }
 }
 
@@ -327,7 +436,7 @@ private fun IntervalTimer(s: VentrePlan.Seance, week: Int, onClose: () -> Unit) 
             if (!saved) {
                 GoldButton("Enregistrer la séance", Modifier.fillMaxWidth()) {
                     Store.saveRun(Run(id = Store.newId(), date = System.currentTimeMillis(), kind = Run.KIND_CORDE,
-                        minutes = (s.totalSec + 59) / 60, feeling = 4, note = "Ventre plat · semaine $week"))
+                        minutes = (s.totalSec + 59) / 60, feeling = 4, note = "Perte de poids · semaine $week"))
                     saved = true
                 }
                 Spacer(Modifier.height(8.dp))

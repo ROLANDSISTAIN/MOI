@@ -94,8 +94,9 @@ data class AppData(
     // ---- Programme pompes 30 jours ----
     val pushupStart: Long = 0L,
     val pushupMax: Int = 0,
-    // ---- Programme ventre plat ----
+    // ---- Programme perte de poids ----
     val fitStart: Long = 0L,
+    val fitDays: Set<Int> = setOf(2, 4, 6), // Calendar : lundi, mercredi, vendredi
     val bodyLogs: List<BodyLog> = emptyList(),
     // ---- Ma vie ----
     val entries: List<Entry> = emptyList(),
@@ -133,6 +134,7 @@ data class AppData(
         put("pushupStart", pushupStart)
         put("pushupMax", pushupMax)
         put("fitStart", fitStart)
+        put("fitDays", JSONArray(fitDays.sorted()))
         put("bodyLogs", arr(bodyLogs) { b -> JSONObject().put("day", b.day).put("weight", b.weight).put("waist", b.waist) })
         put("entries", arr(entries) { e ->
             JSONObject().put("id", e.id).put("section", e.section).put("title", e.title).put("text", e.text)
@@ -210,6 +212,8 @@ data class AppData(
                 pushupStart = o.optLong("pushupStart", 0L),
                 pushupMax = o.optInt("pushupMax", 0),
                 fitStart = o.optLong("fitStart", 0L),
+                fitDays = o.optJSONArray("fitDays")?.let { a -> (0 until a.length()).map { a.getInt(it) }.toSet() }
+                    ?.takeIf { it.isNotEmpty() } ?: d.fitDays,
                 bodyLogs = list(o, "bodyLogs") { b ->
                     BodyLog(b.getString("day"), b.optDouble("weight", 0.0), b.optDouble("waist", 0.0))
                 },
