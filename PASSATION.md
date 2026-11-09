@@ -55,7 +55,8 @@ app/src/main/java/com/roland/moi/
 │   ├── Model.kt            AppData + toutes les classes (Entry, Habit, Run, DayLog, WeekReview…) + JSON
 │   ├── Store.kt            Lecture/écriture de moi_data.json, migrations, actions (saveEntry, saveRun…)
 │   ├── Sections.kt         Les 14 sections de « Ma vie » (libellés, tags, champs actifs)
-│   ├── Quotes.kt           Parole du jour (tirée des textes de Roland + versets) et texte pour le Bouclier
+│   ├── Quotes.kt           Parole du jour : rotation quotidienne entre les familles choisies + texte pour le Bouclier
+│   ├── Sagesse.kt          Bibliothèque hors ligne : versets, sagesse et citations, proverbes, motivation
 │   ├── Dates.kt            Clés de jour/semaine, séries, formats français
 │   ├── Photos.kt           Import/réduction des photos dans filesDir/photos (invisibles dans la galerie)
 │   └── PinManager.kt       Code PIN + empreinte (jamais sauvegardés)
@@ -168,4 +169,5 @@ Consommation vérifiée : MOI n'apparaît pas dans la liste d'utilisation de la 
 | 5 | Sauvegarde des photos sur Drive + alerte sauvegarde en retard |
 | 6 | (échec de compilation, Mon année) |
 | 7 | 🆘 Je suis tenté, Bouclier apps sociales, programme pompes 30 jours, Mon année, Mes décisions |
-| 8 | Programme ventre plat (corde en intervalles + chrono, assiette, mesures), habitude Assiette équilibrée |
+| 9 | (build-9) Programme ventre plat (corde en intervalles + chrono, assiette, mesures), habitude Assiette équilibrée |
+| 10 | Parole du jour enrichie : bibliothèque intégrée (versets, sagesse, proverbes, motivation), un type différent chaque jour, choix dans Réglages, bouton « Une autre » |

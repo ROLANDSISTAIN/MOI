@@ -106,6 +106,7 @@ data class AppData(
     // ---- Réglages ----
     val quoteOn: Boolean = true,
     val quoteTime: Int = 7 * 60,        // minutes depuis minuit
+    val quoteKinds: Set<String> = Sagesse.ALL.toSet(),
     val sportOn: Boolean = true,
     val sportTime: Int = 5 * 60 + 30,
     val protectOn: Boolean = false,
@@ -157,6 +158,7 @@ data class AppData(
         })
         put("quoteOn", quoteOn)
         put("quoteTime", quoteTime)
+        put("quoteKinds", JSONArray(quoteKinds.sorted()))
         put("sportOn", sportOn)
         put("sportTime", sportTime)
         put("protectOn", protectOn)
@@ -237,6 +239,7 @@ data class AppData(
                 },
                 quoteOn = o.optBoolean("quoteOn", true),
                 quoteTime = o.optInt("quoteTime", d.quoteTime),
+                quoteKinds = if (o.has("quoteKinds")) strings(o.optJSONArray("quoteKinds")).toSet() else d.quoteKinds,
                 sportOn = o.optBoolean("sportOn", true),
                 sportTime = o.optInt("sportTime", d.sportTime),
                 protectOn = o.optBoolean("protectOn", false),

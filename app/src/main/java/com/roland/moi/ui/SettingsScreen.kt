@@ -116,6 +116,23 @@ fun SettingsScreen(d: com.roland.moi.data.AppData, nav: Nav, onChangePin: () -> 
             }
             Spacer(Modifier.height(6.dp))
             Text("Elle te rappelle aussi tes capsules à ouvrir et ton bilan du dimanche.", color = TextDim, fontSize = 12.sp)
+            Spacer(Modifier.height(12.dp))
+            Text("Ce qu'elle peut te donner (un type différent chaque jour) :", color = TextMain, fontSize = 13.sp)
+            Spacer(Modifier.height(8.dp))
+            com.roland.moi.data.Sagesse.ALL.chunked(2).forEach { row ->
+                Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+                    row.forEach { k ->
+                        val on = k in d.quoteKinds
+                        Chip(com.roland.moi.data.Sagesse.label(k), on) {
+                            Store.update { it.copy(quoteKinds = if (on) it.quoteKinds - k else it.quoteKinds + k) }
+                        }
+                    }
+                }
+                Spacer(Modifier.height(6.dp))
+            }
+            if (d.quoteKinds.none { it in com.roland.moi.data.Sagesse.ALL }) {
+                Text("Rien de coché : MOI te donnera des versets.", color = TextDim, fontSize = 12.sp)
+            }
         }
 
         Card {

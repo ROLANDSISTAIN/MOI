@@ -23,6 +23,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,7 +45,9 @@ import java.util.Calendar
 fun HomeScreen(d: AppData, shieldOn: Boolean, nav: Nav, onTab: (Int) -> Unit) {
     val now = System.currentTimeMillis()
     val today = Dates.dayKey()
-    val quote = Quotes.today(d)
+    val todayQuote = Quotes.today(d)
+    var other by remember { mutableStateOf<Quotes.Quote?>(null) }
+    val quote = other ?: todayQuote
     val log = d.days.firstOrNull { it.day == today }
     val capsules = d.entries.filter { it.section == Section.CAPSULES.key && it.dueDate in 1..now && !it.done }
     val dow = Dates.dayOfWeek()
@@ -101,7 +107,13 @@ fun HomeScreen(d: AppData, shieldOn: Boolean, nav: Nav, onTab: (Int) -> Unit) {
             Spacer(Modifier.height(10.dp))
             Text(quote.text, color = TextMain, fontSize = 18.sp, lineHeight = 26.sp, fontFamily = Serif, fontStyle = FontStyle.Italic)
             Spacer(Modifier.height(8.dp))
-            Text("— " + quote.source, color = Gold, fontSize = 13.sp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("— " + quote.source, color = Gold, fontSize = 13.sp, modifier = Modifier.weight(1f))
+                Text(
+                    "Une autre ›", color = TextDim, fontSize = 13.sp,
+                    modifier = Modifier.clickable { other = Quotes.random(d, quote) }.padding(start = 12.dp, top = 6.dp, bottom = 6.dp),
+                )
+            }
         }
 
         // ---- Capsules à ouvrir ----
