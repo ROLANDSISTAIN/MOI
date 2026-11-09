@@ -274,7 +274,7 @@ private fun DaysCard(d: AppData) {
             color = TextDim, fontSize = 12.sp,
         )
         Spacer(Modifier.height(2.dp))
-        Text("Le rappel sport du matin te prévient ces jours-là.", color = TextDim, fontSize = 12.sp)
+        Text("Pas de rappel : fais ta séance le matin quand tu es prêt, juste avant de te laver.", color = TextDim, fontSize = 12.sp)
     }
 }
 

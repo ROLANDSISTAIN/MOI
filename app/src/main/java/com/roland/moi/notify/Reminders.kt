@@ -72,14 +72,7 @@ object Reminders {
                 }
             }
             SPORT -> {
-                val week = com.roland.moi.ui.VentrePlan.week(d)
-                if (week > 0 && Dates.dayOfWeek() in d.fitDays &&
-                    d.runs.none { it.kind == com.roland.moi.data.Run.KIND_CORDE && Dates.dayKey(it.date) == Dates.dayKey() }
-                ) {
-                    val s = com.roland.moi.ui.VentrePlan.seance(week)
-                    show(c, 2, "🪢 Séance perte de poids aujourd'hui",
-                        "${com.roland.moi.ui.VentrePlan.dur(s.totalSec)} de corde (${s.label}), puis pompes, squats et gainage.")
-                } else if (d.runs.none { Dates.dayKey(it.date) == Dates.dayKey() }) {
+                if (d.runs.none { Dates.dayKey(it.date) == Dates.dayKey() }) {
                     show(c, 2, "💪 C'est l'heure du sport", "Corde à sauter et pompes. Un matin de plus, le reste suivra.")
                 }
             }
