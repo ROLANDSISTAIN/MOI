@@ -190,7 +190,18 @@ namespace MoiBouclier
             new Pol { Key = @"SOFTWARE\Policies\Mozilla\Firefox", Name = "DisablePrivateBrowsing", Value = 1, Kind = RegistryValueKind.DWord },
             new Pol { Key = @"SOFTWARE\Policies\Mozilla\Firefox\DNSOverHTTPS", Name = "Enabled", Value = 0, Kind = RegistryValueKind.DWord },
             new Pol { Key = @"SOFTWARE\Policies\Mozilla\Firefox\DNSOverHTTPS", Name = "Locked", Value = 1, Kind = RegistryValueKind.DWord },
+
+            // Bloqueur de pubs installé d'office et impossible à retirer (uBlock Origin) :
+            // moins de pubs = moins de redirections vers des sites adultes.
+            new Pol { Key = @"SOFTWARE\Policies\Google\Chrome\ExtensionInstallForcelist", Name = "4701", Value = UboLiteChrome, Kind = RegistryValueKind.String },
+            new Pol { Key = @"SOFTWARE\Policies\BraveSoftware\Brave\ExtensionInstallForcelist", Name = "4701", Value = UboLiteChrome, Kind = RegistryValueKind.String },
+            new Pol { Key = @"SOFTWARE\Policies\Microsoft\Edge\ExtensionInstallForcelist", Name = "4701", Value = UboLiteEdge, Kind = RegistryValueKind.String },
+            new Pol { Key = @"SOFTWARE\Policies\Mozilla\Firefox", Name = "ExtensionSettings", Value = UboFirefox, Kind = RegistryValueKind.String },
         };
+
+        const string UboLiteChrome = "ddkjiahejlhfcafbddmgiahcphecmpfh;https://clients2.google.com/service/update2/crx";
+        const string UboLiteEdge = "cimighlppcgcoapaliogpjjdehbnofhn;https://edge.microsoft.com/extensionwebstorecdn/v1/crx";
+        const string UboFirefox = "{\"uBlock0@raymondhill.net\":{\"installation_mode\":\"force_installed\",\"install_url\":\"https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi\"}}";
 
         static RegistryKey Hklm => RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
 

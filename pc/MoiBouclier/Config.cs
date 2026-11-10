@@ -15,6 +15,8 @@ namespace MoiBouclier
         public List<string> ExtraWords { get; set; } = new List<string>();
         public int Stopped { get; set; }
         public long LastStop { get; set; }
+        /// <summary>Pubs / redirections / pop-ups fermées sans que tu les aies cherchées (pas des tentations).</summary>
+        public int Avoided { get; set; }
         public long UnlockRequestedAt { get; set; }
         public long UnlockUntil { get; set; }
         public bool Installed { get; set; }

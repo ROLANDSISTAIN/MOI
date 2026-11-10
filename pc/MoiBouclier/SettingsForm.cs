@@ -58,6 +58,7 @@ namespace MoiBouclier
             add(Theme.Label($"Tentations stoppées sur ce PC : {c.Stopped}" +
                 (c.LastStop > 0 ? $"  ·  dernière le {DateTimeOffset.FromUnixTimeMilliseconds(c.LastStop).LocalDateTime:dd/MM/yyyy à HH:mm}" : ""),
                 Theme.Body(11, FontStyle.Bold), Theme.Gold, W));
+            add(Theme.Label($"Pièges évités (pubs, redirections, pop-ups — pas des tentations) : {c.Avoided}", Theme.Body(10), Theme.Dim, W));
             add(Theme.Spacer(14));
 
             // ---- Écran STOP ----

@@ -95,8 +95,28 @@ namespace MoiBouclier
         readonly System.Windows.Forms.Timer _maintain = new System.Windows.Forms.Timer { Interval = 2 * 60_000 };
         SettingsForm _settings;
         DateTime _lastStop = DateTime.MinValue;
+        readonly System.Collections.Generic.Queue<DateTime> _recentAvoided = new System.Collections.Generic.Queue<DateTime>();
 
         [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr h);
+
+        // Crochet clavier global : on note seulement QUAND une touche est appuyée (jamais laquelle).
+        delegate IntPtr KeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+        [DllImport("user32.dll", SetLastError = true)] static extern IntPtr SetWindowsHookEx(int idHook, KeyboardProc fn, IntPtr hMod, uint threadId);
+        [DllImport("user32.dll")] static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] static extern IntPtr GetModuleHandle(string name);
+        static KeyboardProc _keyProc; // gardé en mémoire pour que le ramasse-miettes ne le supprime pas
+        static IntPtr _keyHook;
+
+        static void InstallKeyHook()
+        {
+            _keyProc = (n, w, l) =>
+            {
+                if (n >= 0 && (w == (IntPtr)0x0100 || w == (IntPtr)0x0104)) Watcher.LastKeyTicks = DateTime.UtcNow.Ticks; // WM_KEYDOWN / WM_SYSKEYDOWN
+                return CallNextHookEx(_keyHook, n, w, l);
+            };
+            _keyHook = SetWindowsHookEx(13 /* WH_KEYBOARD_LL */, _keyProc, GetModuleHandle(null), 0);
+            if (_keyHook == IntPtr.Zero) Log.Write("Crochet clavier impossible : code " + Marshal.GetLastWin32Error());
+        }
 
         public TrayApp(bool openSettings)
         {
@@ -108,7 +128,8 @@ namespace MoiBouclier
             _icon = new NotifyIcon { Icon = Theme.AppIcon, Text = "MOI — Bouclier actif", Visible = true, ContextMenuStrip = menu };
             _icon.DoubleClick += (s, e) => ShowSettings();
 
-            _watcher.Detected += (h, word) => _ui.BeginInvoke(new Action(() => OnDetected(h, word)));
+            InstallKeyHook();
+            _watcher.Detected += (h, word, voluntary) => _ui.BeginInvoke(new Action(() => OnDetected(h, word, voluntary)));
             _watcher.Start();
 
             ThreadPool.QueueUserWorkItem(_ => Guard.Maintain());
@@ -139,12 +160,20 @@ namespace MoiBouclier
             _settings.Activate();
         }
 
-        void OnDetected(IntPtr browser, string word)
+        void OnDetected(IntPtr browser, string word, bool voluntary)
         {
             if (StopForm.IsShowing || Store.IsUnlocked) return;
             if ((DateTime.UtcNow - _lastStop).TotalMilliseconds < 1500) return;
             _lastStop = DateTime.UtcNow;
-            Log.Write("Détecté : " + word);
+
+            // Garde-fou : 3 « involontaires » en 10 min, ce n'est plus un accident → écran STOP normal.
+            if (!voluntary)
+            {
+                while (_recentAvoided.Count > 0 && (DateTime.UtcNow - _recentAvoided.Peek()).TotalMinutes > 10) _recentAvoided.Dequeue();
+                if (_recentAvoided.Count >= 2) voluntary = true;
+                else _recentAvoided.Enqueue(DateTime.UtcNow);
+            }
+            Log.Write((voluntary ? "Détecté : " : "Redirection / pub fermée : ") + word);
             // Ferme l'onglet fautif (Ctrl+W), puis affiche l'écran STOP.
             try
             {
@@ -153,7 +182,10 @@ namespace MoiBouclier
                 SendKeys.SendWait("^w");
             }
             catch { }
-            StopForm.ShowAll(word);
+            if (voluntary) { StopForm.ShowAll(word); return; }
+            Store.C.Avoided++;
+            Store.Save();
+            ProtectForm.Display(Store.C.Avoided);
         }
     }
 }
