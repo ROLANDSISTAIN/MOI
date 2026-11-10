@@ -173,3 +173,20 @@ Consommation vérifiée : MOI n'apparaît pas dans la liste d'utilisation de la 
 | 12 | Retrait du rappel dédié au programme perte de poids (heure variable) |
 | 11 | « Ventre plat » renommé « Perte de poids », jours de séance (L, Me, V par défaut), vue de la semaine, rappel du matin dédié |
 | 10 | Parole du jour enrichie : bibliothèque intégrée (versets, sagesse, proverbes, motivation), un type différent chaque jour, choix dans Réglages, bouton « Une autre » |
+
+---
+
+## 10. Bouclier PC (Windows)
+
+Dossier `pc/MoiBouclier/` : C# .NET 8 WinForms (UI Automation via WPF), un seul `.exe` autonome.
+Construit par `.github/workflows/pc.yml` (windows-latest) à chaque push touchant `pc/**` → release `pc-N` (`MOI-Bouclier-PC.exe`, pas marquée « latest » pour garder le lien de l'APK). Résultat du build sur la branche `pc-build-log`. Le build Android ignore `pc/**`.
+
+| Élément | Détail |
+|---|---|
+| Installation | Premier lancement → se relance en admin → copie dans `C:\Program Files\MOI Bouclier\MOI-Bouclier.exe`, réglages dans `C:\ProgramData\MOI Bouclier\config.json` (+ `log.txt`). Relancer un nouvel exe = mise à jour (réglages gardés). |
+| Démarrage | Tâche planifiée « MOI Bouclier » : à la connexion + toutes les minutes (IgnoreNew), droits les plus élevés, sans limite de durée. |
+| Détection | Toutes les 0,7 s : fenêtre au premier plan ; si navigateur (Chrome, Edge, Firefox, Opera, Brave, Vivaldi…), titre + barre d'adresse (UI Automation). Même liste de mots que `Keywords.kt` + mots ajoutés. → Ctrl+W puis écran STOP sur tous les écrans (message, verset, lettre, délai 10-120 s). |
+| Filtre | DNS CleanBrowsing « Adult » (185.228.168.10 / 185.228.169.11, 2a0d:2a00:1::1 / 2a0d:2a00:2::1) sur toutes les cartes réseau, remis toutes les 2 min. |
+| Règles navigateurs (HKLM\Policies) | Chrome/Brave/Edge : DNS chiffré coupé, navigation privée et invité désactivés, SafeSearch forcé (Bing strict sur Edge), Tor coupé dans Brave. Firefox : navigation privée désactivée, DoH coupé. Opera n'a pas de règles (titre + adresse surveillés quand même). |
+| Arrêt protégé | Comme le téléphone : demande puis 24 h d'attente (valable jusqu'à 48 h), ou recopier la phrase d'engagement → 15 min déverrouillé (surveillance en pause, désinstallation possible). Baisser le délai ou retirer un mot demande aussi le déverrouillage. |
+| Limites | VPN (dont le VPN intégré d'Opera) contourne le DNS mais pas la détection. Un administrateur déterminé peut toujours tout retirer (mode sans échec…). Non testé sur le PC de Roland au moment de la livraison. |
