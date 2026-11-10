@@ -53,8 +53,20 @@ namespace MoiBouclier
                 return;
             }
 
+            // ---- Copie installée lancée à la main sans droits admin : on se relance en admin ----
+            bool bg = Array.Exists(args, a => a == "--bg");
+            if (!bg && !Guard.IsAdmin)
+            {
+                try { Process.Start(new ProcessStartInfo(Environment.ProcessPath) { UseShellExecute = true, Verb = "runas" }); } catch { }
+                return;
+            }
+
             // ---- Copie installée : une seule à la fois ----
-            using var mutex = new Mutex(true, MutexName, out var first);
+            Mutex mutex;
+            bool first;
+            try { mutex = new Mutex(true, MutexName, out first); }
+            catch (UnauthorizedAccessException) { return; } // déjà lancée avec plus de droits
+            using var _m = mutex;
             if (!first)
             {
                 if (!Array.Exists(args, a => a == "--bg"))
