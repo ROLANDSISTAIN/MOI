@@ -1,0 +1,56 @@
+name: Construire MOI Bouclier PC
+
+on:
+  push:
+    branches: [main]
+    paths: ['pc/**', '.github/workflows/pc.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Construire l'exe
+        id: build
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet publish pc/MoiBouclier/MoiBouclier.csproj -c Release -r win-x64 --self-contained true \
+            -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true \
+            -p:Version=1.0.${{ github.run_number }} -o out 2>&1 | tee build.log
+          cp out/MOI-Bouclier.exe MOI-Bouclier-PC.exe
+
+      - name: Publier l'exe
+        if: success()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: pc-${{ github.run_number }}
+          name: MOI Bouclier PC 1.0.${{ github.run_number }}
+          make_latest: false
+          files: MOI-Bouclier-PC.exe
+
+      - name: Enregistrer le résultat (pour Claude)
+        if: always()
+        shell: bash
+        run: |
+          STATUS="${{ steps.build.outcome }}"
+          mkdir -p /tmp/out
+          echo "run=${{ github.run_number }} commit=${{ github.sha }} status=$STATUS" > /tmp/out/status.txt
+          grep -E "error|warning CS" build.log | sort -u | head -300 > /tmp/out/errors.txt || true
+          tail -100 build.log > /tmp/out/tail.txt || true
+          cd /tmp/out
+          git init -q -b pc-build-log
+          git config user.name "moi-bot"
+          git config user.email "moi-bot@users.noreply.github.com"
+          git add -A
+          git commit -qm "pc build ${{ github.run_number }}: $STATUS"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" pc-build-log
