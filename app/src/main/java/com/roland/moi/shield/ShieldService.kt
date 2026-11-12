@@ -3,6 +3,8 @@ package com.roland.moi.shield
 import android.accessibilityservice.AccessibilityService
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
@@ -19,9 +21,28 @@ class ShieldService : AccessibilityService() {
     private var lastScan = 0L
     private var lastGuardScan = 0L
 
+    // Navigateurs trouvés sur le téléphone (toute app capable d'ouvrir une page web), même inconnus de la liste.
+    @Volatile private var foundBrowsers: Set<String> = emptySet()
+    private var browsersCheckedAt = 0L
+
+    private fun refreshBrowsers(now: Long) {
+        if (now - browsersCheckedAt < 5 * 60_000L) return
+        browsersCheckedAt = now
+        foundBrowsers = runCatching {
+            val i = Intent(Intent.ACTION_VIEW, Uri.parse("https://example.com")).addCategory(Intent.CATEGORY_BROWSABLE)
+            packageManager.queryIntentActivities(i, PackageManager.MATCH_ALL)
+                .mapNotNull { it.activityInfo?.packageName }
+                .filter { it != packageName && it !in Keywords.socialApps && !Protection.isGuardedPackage(it) }
+                .toSet()
+        }.getOrDefault(foundBrowsers)
+    }
+
+    private fun isBrowser(pkg: String) = pkg in Keywords.browsers || pkg in foundBrowsers
+
     override fun onServiceConnected() {
         super.onServiceConnected()
         running = true
+        refreshBrowsers(System.currentTimeMillis())
     }
 
     override fun onDestroy() {
@@ -47,7 +68,8 @@ class ShieldService : AccessibilityService() {
             return
         }
 
-        if (pkg !in Keywords.browsers) return
+        refreshBrowsers(now)
+        if (!isBrowser(pkg)) return
         if (now < cooldownUntil || ShieldActivity.showing) return
 
         // Option : bloquer les navigateurs avec VPN intégré (ils contournent le DNS)
@@ -141,13 +163,20 @@ class ShieldService : AccessibilityService() {
         root.findFocus(AccessibilityNodeInfo.FOCUS_INPUT)?.let { f ->
             Keywords.match(f.text?.toString())?.let { return it }
         }
-        // Secours : parcourir les champs de saisie et barres d'adresse inconnus
+        // Secours : parcourir les champs de saisie et barres d'adresse inconnus,
+        // et lire le TITRE de la page affichée (attrape les sites au nom neutre).
         var visited = 0
         val stack = ArrayDeque<AccessibilityNodeInfo>()
         stack.add(root)
         while (stack.isNotEmpty() && visited < 200) {
             val n = stack.removeLast()
             visited++
+            if (n.className?.toString() == "android.webkit.WebView") {
+                // La zone de la page : son nom est le titre de la page. On ne lit pas le contenu lui-même.
+                Keywords.match(n.text?.toString())?.let { return it }
+                Keywords.match(n.contentDescription?.toString())?.let { return it }
+                continue
+            }
             val id = n.viewIdResourceName ?: ""
             val isField = n.isEditable || id.contains("url", true) || id.contains("search", true) ||
                 id.contains("omnibox", true) || id.contains("address", true)

@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.roland.moi.data.AppData
 import com.roland.moi.data.Store
+import com.roland.moi.shield.Keywords
 import kotlinx.coroutines.delay
 import java.util.Calendar
 
@@ -220,6 +221,7 @@ private fun WeakMoments(times: List<Long>) {
 private fun RelapseDialog(onDismiss: () -> Unit) {
     var what by remember { mutableStateOf("") }
     var trigger by remember { mutableStateOf("") }
+    var site by remember { mutableStateOf("") }
     val triggers = listOf("Ennui", "Solitude", "Stress", "Fatigue / tard le soir", "Perte en trading", "Réseaux sociaux", "Colère", "Tristesse", "Autre")
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -253,10 +255,29 @@ private fun RelapseDialog(onDismiss: () -> Unit) {
                     label = { Text("Ce qui s'est passé, ce que je ferai autrement") },
                     modifier = Modifier.fillMaxWidth(), minLines = 3,
                 )
+                Spacer(Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = site, onValueChange = { site = it }, singleLine = true,
+                    label = { Text("Par quel site ou quel mot ? (facultatif)") },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "Écris juste son nom : le Bouclier le bloquera dès maintenant, pour que cette porte reste fermée.",
+                    color = TextDim, fontSize = 12.sp, lineHeight = 16.sp,
+                )
             }
         },
         confirmButton = {
-            TextButton(onClick = { Store.recordRelapse(what.trim(), trigger); onDismiss() }) {
+            TextButton(onClick = {
+                Store.recordRelapse(what.trim(), trigger)
+                val w = Keywords.cleanExtra(site)
+                if (Keywords.compact(w).length >= 4) Store.update { cur ->
+                    if (cur.shieldExtraWords.any { Keywords.compact(it) == Keywords.compact(w) }) cur
+                    else cur.copy(shieldExtraWords = cur.shieldExtraWords + w)
+                }
+                onDismiss()
+            }) {
                 Text("Recommencer à zéro", color = Gold)
             }
         },
