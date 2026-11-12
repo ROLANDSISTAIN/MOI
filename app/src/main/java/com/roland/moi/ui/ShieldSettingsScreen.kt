@@ -31,7 +31,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.roland.moi.data.AppData
 import com.roland.moi.data.Store
+import com.roland.moi.shield.Keywords
+import com.roland.moi.shield.Protection
 import com.roland.moi.shield.ShieldActivity
+import androidx.compose.foundation.clickable
 
 @Composable
 fun ShieldSettingsScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
@@ -80,6 +83,56 @@ fun ShieldSettingsScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
             GoldButton("Enregistrer", Modifier.fillMaxWidth(), enabled = changed) {
                 Store.update { it.copy(shieldMessage = message.trim(), shieldVerse = verse.trim(), shieldDelaySec = delay.toInt()) }
                 Toast.makeText(ctx, "Enregistré", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        Card {
+            var newSite by remember { mutableStateOf("") }
+            val locked = Protection.isActive(d)
+            SectionLabel("Mes sites et mots à bloquer")
+            Spacer(Modifier.height(6.dp))
+            Text(
+                "Un site ou un mot qui t'a fait tomber ? Ajoute-le ici tout de suite : le Bouclier le bloquera partout. " +
+                    "Écris juste le nom (ex. « epsilonscan »), pas besoin de l'adresse complète.",
+                color = TextDim, fontSize = 13.sp, lineHeight = 18.sp,
+            )
+            Spacer(Modifier.height(10.dp))
+            OutlinedTextField(
+                value = newSite, onValueChange = { newSite = it }, singleLine = true,
+                label = { Text("Site ou mot") }, modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.height(8.dp))
+            GoldButton("Ajouter à ma liste", Modifier.fillMaxWidth(), enabled = Keywords.compact(Keywords.cleanExtra(newSite)).length >= 4) {
+                val w = Keywords.cleanExtra(newSite)
+                Store.update { cur ->
+                    if (cur.shieldExtraWords.any { Keywords.compact(it) == Keywords.compact(w) }) cur
+                    else cur.copy(shieldExtraWords = cur.shieldExtraWords + w)
+                }
+                newSite = ""
+                Toast.makeText(ctx, "Bloqué. Bien joué 💪", Toast.LENGTH_SHORT).show()
+            }
+            if (d.shieldExtraWords.isNotEmpty()) {
+                Spacer(Modifier.height(10.dp))
+                d.shieldExtraWords.forEach { w ->
+                    Row(Modifier.fillMaxWidth().padding(vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text("🚫  $w", color = TextMain, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                        if (!locked) {
+                            Text(
+                                "Retirer", color = Danger, fontSize = 13.sp,
+                                modifier = Modifier.clickable {
+                                    Store.update { cur -> cur.copy(shieldExtraWords = cur.shieldExtraWords - w) }
+                                }.padding(6.dp),
+                            )
+                        }
+                    }
+                }
+                if (locked) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "Pour retirer un site, il faut d'abord déverrouiller la Protection (Réglages → Protection).",
+                        color = TextDim, fontSize = 12.sp, lineHeight = 16.sp,
+                    )
+                }
             }
         }
 

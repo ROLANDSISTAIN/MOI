@@ -1,5 +1,6 @@
 package com.roland.moi.shield
 
+import com.roland.moi.data.Store
 import java.text.Normalizer
 
 /** Détection des recherches et sites à caractère sexuel (français + anglais). */
@@ -19,6 +20,14 @@ object Keywords {
         "chaturbate", "stripchat", "bongacams", "livejasmin", "cam4", "camsoda",
         "jacquieetmichel", "jacquie et michel", "nhentai", "hanime", "motherless", "beeg",
         "tube8", "porn300", "hqporner", "daftsex", "sxyprn", "thothub", "fapello", "erome",
+        // Mangas / manhwas / webtoons pour adultes
+        "epsilon scan", "epsilon scans", "ecchi", "smut", "doujin", "doujinshi", "pornhwa",
+        "manga adulte", "manga adultes", "manga pour adulte", "manga pour adultes", "manhwa adulte", "manhwa adultes",
+        "manhwa pour adulte", "manhwa pour adultes", "manhua adulte", "webtoon adulte", "webtoon adultes",
+        "scan adulte", "scans adultes", "scan pour adulte", "scan pour adultes", "bd adulte",
+        "adult manga", "adult manhwa", "adult manhua", "adult webtoon", "adult comic", "adult comics",
+        "manga mature", "manhwa mature", "mature manga", "mature manhwa", "webtoon mature",
+        "manga 18", "manhwa 18", "manhua 18", "webtoon 18", "scan 18", "manga hot", "manhwa hot",
     )
 
     /** Morceaux d'adresses web (détectés n'importe où dans l'URL). */
@@ -28,7 +37,30 @@ object Keywords {
         "camsoda", "onlyfans", "fansly", "nhentai", "hanime", "motherless", "hqporner",
         "daftsex", "sxyprn", "thothub", "fapello", "erome.com", "rule34", "jacquieetmichel",
         "porn", "xxx", "sex.com", "hentai", "nsfw",
+        // Sites de mangas / manhwas pour adultes
+        "epsilonscan", "epsilonsoft", "epsilon-scan", "manhwa18", "manga18", "manhua18", "manhwa68",
+        "manytoon", "toonily", "hiperdex", "omegascans", "pornhwa", "doujin",
     )
+
+    /** Sites et mots ajoutés par Roland (Bouclier → Mes sites à bloquer). */
+    private val extra: List<String> get() = Store.data.value.shieldExtraWords
+
+    /** Ne garde que lettres et chiffres : « Epsilon-Scan », « epsilon scan » et « epsilonscan.fr » → même chose. */
+    fun compact(s: String): String = normalize(s).replace(Regex("[^a-z0-9]"), "")
+
+    /** Nettoie ce qui est saisi : enlève https://, www. et tout ce qui suit le nom du site. */
+    fun cleanExtra(raw: String): String {
+        var t = normalize(raw.trim()).removePrefix("https://").removePrefix("http://").removePrefix("www.")
+        t = t.substringBefore('/').substringBefore('?').trim()
+        return t
+    }
+
+    private fun matchExtra(t: String): String? {
+        val list = extra
+        if (list.isEmpty()) return null
+        val c = t.replace(Regex("[^a-z0-9]"), "")
+        return list.firstOrNull { val x = compact(it); x.length >= 4 && c.contains(x) }
+    }
 
     private val wordRegex: Regex by lazy {
         val alt = words.sortedByDescending { it.length }.joinToString("|") { Regex.escape(it) }
@@ -45,6 +77,7 @@ object Keywords {
         val t = normalize(raw)
         // Les sites, même collés dans une URL (ex: fr.pornhub.com/...)
         domainParts.firstOrNull { t.contains(it) }?.let { return it }
+        matchExtra(t)?.let { return it }
         // Les mots dans une recherche (ex: "video sexe", "sexe+video")
         val spaced = t.replace('+', ' ').replace('_', ' ').replace('-', ' ').replace("%20", " ")
         return wordRegex.find(spaced)?.groupValues?.get(2)
@@ -55,7 +88,7 @@ object Keywords {
         if (raw.isNullOrBlank()) return null
         val t = normalize(raw.trim())
         if (t.contains(' ') || !t.contains('.')) return null // ce n'est pas une adresse
-        return domainParts.firstOrNull { t.contains(it) }
+        return domainParts.firstOrNull { t.contains(it) } ?: matchExtra(t)
     }
 
     /** Apps sociales : on surveille leurs recherches et les liens qu'elles ouvrent, pas les publications. */

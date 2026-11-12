@@ -25,6 +25,14 @@ namespace MoiBouclier
             "chaturbate", "stripchat", "bongacams", "livejasmin", "cam4", "camsoda",
             "jacquieetmichel", "jacquie et michel", "nhentai", "hanime", "motherless", "beeg",
             "tube8", "porn300", "hqporner", "daftsex", "sxyprn", "thothub", "fapello", "erome",
+            // Mangas / manhwas / webtoons pour adultes
+            "epsilon scan", "epsilon scans", "ecchi", "smut", "doujin", "doujinshi", "pornhwa",
+            "manga adulte", "manga adultes", "manga pour adulte", "manga pour adultes", "manhwa adulte", "manhwa adultes",
+            "manhwa pour adulte", "manhwa pour adultes", "manhua adulte", "webtoon adulte", "webtoon adultes",
+            "scan adulte", "scans adultes", "scan pour adulte", "scan pour adultes", "bd adulte",
+            "adult manga", "adult manhwa", "adult manhua", "adult webtoon", "adult comic", "adult comics",
+            "manga mature", "manhwa mature", "mature manga", "mature manhwa", "webtoon mature",
+            "manga 18", "manhwa 18", "manhua 18", "webtoon 18", "scan 18", "manga hot", "manhwa hot",
         };
 
         /// <summary>Morceaux d'adresses web, détectés n'importe où.</summary>
@@ -35,6 +43,9 @@ namespace MoiBouclier
             "camsoda", "onlyfans", "fansly", "nhentai", "hanime", "motherless", "hqporner",
             "daftsex", "sxyprn", "thothub", "fapello", "erome.com", "rule34", "jacquieetmichel",
             "porn", "xxx", "sex.com", "hentai", "nsfw",
+            // Sites de mangas / manhwas pour adultes
+            "epsilonscan", "epsilonsoft", "epsilon-scan", "manhwa18", "manga18", "manhua18", "manhwa68",
+            "manytoon", "toonily", "hiperdex", "omegascans", "pornhwa", "doujin",
         };
 
         /// <summary>Navigateurs surveillés (nom du processus, sans .exe).</summary>
@@ -76,6 +87,16 @@ namespace MoiBouclier
             if (string.IsNullOrWhiteSpace(raw) || raw.Length < 2) return null;
             var t = Normalize(raw);
             foreach (var p in DomainParts) if (t.Contains(p)) return p;
+            // Sites ajoutés à la main : « epsilon-scan », « epsilon scan » et « epsilonscan.fr » comptent pareil.
+            if (extra != null)
+            {
+                var c = Regex.Replace(t, "[^a-z0-9]", "");
+                foreach (var e in extra)
+                {
+                    var x = Regex.Replace(Normalize(e), "[^a-z0-9]", "");
+                    if (x.Length >= 4 && c.Contains(x)) return e.Trim();
+                }
+            }
             var spaced = t.Replace('+', ' ').Replace('_', ' ').Replace('-', ' ').Replace("%20", " ");
             var m = WordRegex(extra ?? Enumerable.Empty<string>()).Match(spaced);
             return m.Success ? m.Groups[2].Value : null;

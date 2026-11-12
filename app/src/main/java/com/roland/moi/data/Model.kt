@@ -90,6 +90,7 @@ data class AppData(
     val shieldDelaySec: Int = 30,
     val blockVpnBrowsers: Boolean = false,
     val socialShield: Boolean = true,
+    val shieldExtraWords: List<String> = emptyList(), // sites et mots ajoutés à la main
     val sosCount: Int = 0,
     // ---- Programme pompes 30 jours ----
     val pushupStart: Long = 0L,
@@ -130,6 +131,7 @@ data class AppData(
         put("shieldDelaySec", shieldDelaySec)
         put("blockVpnBrowsers", blockVpnBrowsers)
         put("socialShield", socialShield)
+        put("shieldExtraWords", JSONArray(shieldExtraWords))
         put("sosCount", sosCount)
         put("pushupStart", pushupStart)
         put("pushupMax", pushupMax)
@@ -208,6 +210,7 @@ data class AppData(
                 shieldDelaySec = o.optInt("shieldDelaySec", 30),
                 blockVpnBrowsers = o.optBoolean("blockVpnBrowsers", false),
                 socialShield = o.optBoolean("socialShield", true),
+                shieldExtraWords = o.optJSONArray("shieldExtraWords")?.let { a -> (0 until a.length()).map { a.getString(it) } } ?: emptyList(),
                 sosCount = o.optInt("sosCount", 0),
                 pushupStart = o.optLong("pushupStart", 0L),
                 pushupMax = o.optInt("pushupMax", 0),
