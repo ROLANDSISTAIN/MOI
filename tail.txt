@@ -1,0 +1,5 @@
+  Determining projects to restore...
+  Restored D:\a\MOI\MOI\pc\MoiBouclier\MoiBouclier.csproj (in 6.05 sec).
+CSC : warning WFAC010: Remove high DPI settings from D:\a\MOI\MOI\pc\MoiBouclier\app.manifest and configure via Application.SetHighDpiMode API or 'ApplicationHighDpiMode' project property [D:\a\MOI\MOI\pc\MoiBouclier\MoiBouclier.csproj]
+  MoiBouclier -> D:\a\MOI\MOI\pc\MoiBouclier\bin\Release\net8.0-windows\win-x64\MOI-Bouclier.dll
+  MoiBouclier -> D:\a\MOI\MOI\out\
