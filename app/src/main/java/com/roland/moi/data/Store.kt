@@ -108,6 +108,9 @@ object Store {
         )
     }
 
+    /** L'engagement du jour (on garde un peu plus d'un an d'historique). */
+    fun pledgeToday() = update { it.copy(pledgeDays = (it.pledgeDays + Dates.dayKey()).sorted().takeLast(400).toSet()) }
+
     // ---------- Ma vie ----------
 
     fun saveEntry(e: Entry) = update { d ->

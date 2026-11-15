@@ -73,8 +73,24 @@ fun SosScreen(d: AppData, nav: Nav) {
     }
 }
 
+/** La respiration seule (depuis Liberté), sans compter une tentation. */
 @Composable
-private fun Breathe(onDone: () -> Unit) {
+fun BreatheScreen(nav: Nav) {
+    Page("Respiration", onBack = { nav.back() }) {
+        Breathe(doneLabel = "Terminer") { nav.back() }
+    }
+}
+
+/** Mes mots : la lettre à moi-même, mon message et mon verset. */
+@Composable
+fun SelfTalkScreen(d: AppData, nav: Nav) {
+    Page("Mes mots", onBack = { nav.back() }) {
+        Words(d, button = "Modifier mon message et mon verset") { nav.go(Route.ShieldSettings) }
+    }
+}
+
+@Composable
+internal fun Breathe(doneLabel: String = "Continuer", onDone: () -> Unit) {
     // 4 s inspirer · 4 s retenir · 6 s expirer — 4 cycles (≈ 1 minute)
     val scale = remember { Animatable(0.55f) }
     var label by remember { mutableStateOf("Prépare-toi") }
@@ -104,12 +120,12 @@ private fun Breathe(onDone: () -> Unit) {
         Spacer(Modifier.height(30.dp))
         Text("La tentation est une vague. Elle monte, puis elle redescend. Toujours.", color = TextMain, fontSize = 15.sp, lineHeight = 22.sp, textAlign = TextAlign.Center)
         Spacer(Modifier.height(24.dp))
-        GoldButton(if (finished) "Continuer" else "Passer", Modifier.fillMaxWidth(), onClick = onDone)
+        GoldButton(if (finished) doneLabel else "Passer", Modifier.fillMaxWidth(), onClick = onDone)
     }
 }
 
 @Composable
-private fun Words(d: AppData, onNext: () -> Unit) {
+internal fun Words(d: AppData, button: String = "Maintenant, bouge", onNext: () -> Unit) {
     val letter = remember { Quotes.forShield(d) }
     val streakDays = ((System.currentTimeMillis() - d.streakStart) / DAY_MS).toInt()
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -135,7 +151,7 @@ private fun Words(d: AppData, onNext: () -> Unit) {
         if (letter == null) {
             Text("Astuce : écris une « Lettre à moi-même » dans Ma vie. Elle s'affichera ici.", color = TextDim, fontSize = 12.sp)
         }
-        GoldButton("Maintenant, bouge", Modifier.fillMaxWidth(), onClick = onNext)
+        GoldButton(button, Modifier.fillMaxWidth(), onClick = onNext)
     }
 }
 

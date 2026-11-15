@@ -23,6 +23,7 @@ object Reminders {
     private const val CHANNEL = "moi_matin"
     const val QUOTE = "quote"
     const val SPORT = "sport"
+    const val PLEDGE = "pledge"
 
     fun createChannel(c: Context) {
         val ch = NotificationChannel(CHANNEL, "Rappels de MOI", NotificationManager.IMPORTANCE_DEFAULT)
@@ -34,6 +35,7 @@ object Reminders {
         val d = Store.data.value
         schedule(c, QUOTE, d.quoteTime, d.quoteOn)
         schedule(c, SPORT, d.sportTime, d.sportOn)
+        schedule(c, PLEDGE, d.pledgeTime, d.pledgeOn)
     }
 
     private fun pending(c: Context, kind: String): PendingIntent =
@@ -69,6 +71,11 @@ object Reminders {
                 // Dimanche : bilan de la semaine
                 if (Dates.dayOfWeek() == Calendar.SUNDAY && d.reviews.none { it.week == Dates.weekKey() }) {
                     show(c, 3, "Bilan de la semaine", "Prends 3 minutes ce soir pour faire le point sur ta semaine.")
+                }
+            }
+            PLEDGE -> {
+                if (Dates.dayKey() !in d.pledgeDays) {
+                    show(c, 4, "Ton engagement du jour", "Ouvre MOI et engage-toi pour aujourd'hui. Un jour à la fois.")
                 }
             }
             SPORT -> {

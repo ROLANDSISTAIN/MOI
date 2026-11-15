@@ -92,6 +92,10 @@ data class AppData(
     val socialShield: Boolean = true,
     val shieldExtraWords: List<String> = emptyList(), // sites et mots ajoutés à la main
     val sosCount: Int = 0,
+    val freedomGoal: Int = 365,                      // objectif en jours
+    val pledgeDays: Set<String> = emptySet(),        // jours où l'engagement a été pris ("yyyy-MM-dd")
+    val pledgeOn: Boolean = false,                   // rappel d'engagement du matin
+    val pledgeTime: Int = 6 * 60,
     // ---- Programme pompes 30 jours ----
     val pushupStart: Long = 0L,
     val pushupMax: Int = 0,
@@ -133,6 +137,10 @@ data class AppData(
         put("socialShield", socialShield)
         put("shieldExtraWords", JSONArray(shieldExtraWords))
         put("sosCount", sosCount)
+        put("freedomGoal", freedomGoal)
+        put("pledgeDays", JSONArray(pledgeDays.sorted()))
+        put("pledgeOn", pledgeOn)
+        put("pledgeTime", pledgeTime)
         put("pushupStart", pushupStart)
         put("pushupMax", pushupMax)
         put("fitStart", fitStart)
@@ -173,7 +181,7 @@ data class AppData(
     }
 
     companion object {
-        const val SCHEMA = 4
+        const val SCHEMA = 5
 
         fun defaultHabits() = listOf(
             Habit("h_priere", "Prière du matin", "🙏"),
@@ -212,6 +220,10 @@ data class AppData(
                 socialShield = o.optBoolean("socialShield", true),
                 shieldExtraWords = o.optJSONArray("shieldExtraWords")?.let { a -> (0 until a.length()).map { a.getString(it) } } ?: emptyList(),
                 sosCount = o.optInt("sosCount", 0),
+                freedomGoal = o.optInt("freedomGoal", d.freedomGoal).coerceAtLeast(1),
+                pledgeDays = strings(o.optJSONArray("pledgeDays")).toSet(),
+                pledgeOn = o.optBoolean("pledgeOn", false),
+                pledgeTime = o.optInt("pledgeTime", d.pledgeTime),
                 pushupStart = o.optLong("pushupStart", 0L),
                 pushupMax = o.optInt("pushupMax", 0),
                 fitStart = o.optLong("fitStart", 0L),

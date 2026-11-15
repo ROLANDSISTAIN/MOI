@@ -4,6 +4,7 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,12 +36,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.roland.moi.data.AppData
+import com.roland.moi.data.Dates
 import com.roland.moi.data.Store
+import com.roland.moi.notify.Reminders
 import com.roland.moi.shield.Keywords
 import kotlinx.coroutines.delay
 import java.util.Calendar
@@ -52,56 +58,75 @@ fun LiberteScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(Unit) { while (true) { delay(1000); now = System.currentTimeMillis() } }
     var showRelapse by remember { mutableStateOf(false) }
+    var showPledge by remember { mutableStateOf(false) }
+    var showGoal by remember { mutableStateOf(false) }
+    var showReminder by remember { mutableStateOf(false) }
+    var pickTime by remember { mutableStateOf(false) }
 
     val streakMs = (now - d.streakStart).coerceAtLeast(0)
     val days = (streakMs / DAY_MS).toInt()
-    val next = MILESTONES.firstOrNull { it > days } ?: (days + 1)
-    val prev = MILESTONES.lastOrNull { it <= days } ?: 0
-    val progress = ((streakMs - prev * DAY_MS).toFloat() / ((next - prev) * DAY_MS)).coerceIn(0f, 1f)
+    val goal = d.freedomGoal.coerceAtLeast(1)
+    val progress = (streakMs.toFloat() / (goal * DAY_MS).toFloat()).coerceIn(0f, 1f)
+    val reached = days >= goal
     val best = maxOf(d.bestStreakMs, streakMs)
     val weekAgo = now - 7 * DAY_MS
     val weekTemptations = d.temptations.count { it > weekAgo }
+    val pledged = Dates.dayKey(now) in d.pledgeDays
 
-    Page("Liberté", onBack = { nav.back() }, actions = {
-        androidx.compose.material3.TextButton(onClick = { nav.go(Route.ShieldSettings) }) {
-            Text("Bouclier", color = Gold)
-        }
-    }) {
+    Page("Liberté", onBack = { nav.back() }) {
 
         // ---- Le compteur ----
-        Card {
-            SectionLabel("Jours de liberté")
-            Spacer(Modifier.height(6.dp))
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text("$days", color = Gold, fontSize = 88.sp, fontFamily = Serif, fontWeight = FontWeight.Bold, lineHeight = 88.sp)
-                Spacer(Modifier.width(10.dp))
-                Text(if (days > 1) "jours" else "jour", color = TextMain, fontSize = 20.sp, modifier = Modifier.padding(bottom = 16.dp))
-            }
-            val h = (streakMs % DAY_MS) / 3_600_000
-            val m = (streakMs / 60_000) % 60
-            val s = (streakMs / 1000) % 60
-            Text("%02d h  %02d min  %02d s".format(h, m, s), color = TextDim, fontSize = 15.sp, letterSpacing = 1.sp)
-            Spacer(Modifier.height(18.dp))
+        Column(
+            Modifier.fillMaxWidth()
+                .background(Brush.linearGradient(listOf(Color(0xFF4A3A12), Color(0xFF241C09))), RoundedCornerShape(22.dp))
+                .border(1.dp, GoldSoft.copy(alpha = 0.5f), RoundedCornerShape(22.dp))
+                .padding(20.dp),
+        ) {
+            Text("Jours de liberté", color = TextMain, fontSize = 22.sp, fontFamily = Serif)
+            Spacer(Modifier.height(26.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Prochain palier : ${milestoneName(next)}", color = TextMain, fontSize = 13.sp)
-                Text("${(progress * 100).toInt()} %", color = Gold, fontSize = 13.sp)
+                Num("$days", if (days > 1) "Jours" else "Jour")
+                Num("%02d".format((streakMs % DAY_MS) / 3_600_000), "Heures")
+                Num("%02d".format((streakMs / 60_000) % 60), "Minutes")
+                Num("%02d".format((streakMs / 1000) % 60), "Secondes")
             }
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(18.dp))
             LinearProgressIndicator(
                 progress = { progress },
                 modifier = Modifier.fillMaxWidth().height(6.dp),
-                color = Gold, trackColor = Surface2, drawStopIndicator = {},
+                color = Gold, trackColor = Color.White.copy(alpha = 0.18f), drawStopIndicator = {},
             )
+            Spacer(Modifier.height(10.dp))
+            Row(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).clickable { showGoal = true },
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text("Objectif : ${goalName(goal)}  ✎", color = TextMain, fontSize = 14.sp)
+                Text("${(progress * 100).toInt()} %", color = Gold, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+            }
         }
 
-        // ---- Statistiques ----
+        // ---- Actions ----
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Stat("Record", formatStreak(best), Modifier.weight(1f))
-            Stat("Victoires", "${d.resistCount}", Modifier.weight(1f))
-            Stat("Tentations\n7 jours", "$weekTemptations", Modifier.weight(1f))
+            ActionTile("↺", "Rechute", Modifier.weight(1f)) { showRelapse = true }
+            ActionTile(if (pledged) "✓" else "✋", if (pledged) "Engagé" else "Engagement", Modifier.weight(1f), highlight = pledged) {
+                showPledge = true
+            }
+            ActionTile("🛡️", "Bouclier", Modifier.weight(1f)) { nav.go(Route.ShieldSettings) }
         }
 
-        // ---- Bouclier ----
+        // ---- Bouton panique ----
+        Row(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(50))
+                .background(Danger.copy(alpha = 0.22f))
+                .border(1.dp, Danger, RoundedCornerShape(50))
+                .clickable { nav.go(Route.Sos) }.padding(vertical = 16.dp),
+            horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("⚠️  Bouton panique", color = TextMain, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+        }
+
+        // ---- Bouclier désactivé ----
         if (!shieldOn) {
             Card(Modifier.border(1.dp, Danger, RoundedCornerShape(18.dp))) {
                 SectionLabel("Bouclier désactivé")
@@ -115,12 +140,51 @@ fun LiberteScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
                     ctx.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 }
             }
-        } else {
-            Card {
-                SectionLabel("🛡️ Bouclier actif")
-                Spacer(Modifier.height(6.dp))
-                Text("Tous tes navigateurs sont surveillés, y compris en navigation privée.", color = TextDim, fontSize = 13.sp)
+        }
+
+        // ---- Outils ----
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            ListRow(
+                "📖", "Mes rechutes et leçons",
+                if (d.relapses.isEmpty()) "Aucune rechute enregistrée" else "${d.relapses.size} au total",
+                trailing = "›",
+            ) { nav.go(Route.Relapses) }
+            ListRow(
+                "⏰", "Rappel d'engagement",
+                if (d.pledgeOn) "Chaque jour à ${Dates.time(d.pledgeTime)}" else "Désactivé",
+                trailing = "›",
+            ) { if (d.pledgeOn) showReminder = true else pickTime = true }
+            ListRow("🌿", "Respiration", "Une minute pour laisser passer la vague", trailing = "›") { nav.go(Route.Breathe) }
+            ListRow("💬", "Mes mots", "Ma lettre, mon message, mon verset", trailing = "›") { nav.go(Route.SelfTalk) }
+        }
+
+        // ---- Projection ----
+        Card {
+            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(if (reached) "👑" else "🕒", fontSize = 26.sp)
+                Spacer(Modifier.height(8.dp))
+                if (reached) {
+                    Text("Objectif atteint", color = Gold, fontSize = 26.sp, fontFamily = Serif, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(6.dp))
+                    Text("Choisis un objectif plus grand.", color = TextDim, fontSize = 14.sp)
+                } else {
+                    Text("Tu atteindras ton objectif le", color = TextMain, fontSize = 15.sp)
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        Dates.shortDate(Dates.addDays(d.streakStart, goal)), color = Gold,
+                        fontSize = 28.sp, fontFamily = Serif, fontWeight = FontWeight.Bold,
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text("Continue. Un jour à la fois.", color = TextDim, fontSize = 14.sp)
+                }
             }
+        }
+
+        // ---- Statistiques ----
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Stat("Record", formatStreak(best), Modifier.weight(1f))
+            Stat("Victoires", "${d.resistCount}", Modifier.weight(1f))
+            Stat("Tentations\n7 jours", "$weekTemptations", Modifier.weight(1f))
         }
 
         // ---- Paliers ----
@@ -140,26 +204,127 @@ fun LiberteScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
                 WeakMoments(d.temptations)
             }
         }
-
-        // ---- Rechutes / leçons ----
-        if (d.relapses.isNotEmpty()) {
-            Card {
-                SectionLabel("Ce que j'ai appris")
-                Spacer(Modifier.height(10.dp))
-                d.relapses.takeLast(5).reversed().forEach { r ->
-                    Text(formatDate(r.time) + " · après " + formatStreak(r.streakMs), color = TextDim, fontSize = 12.sp)
-                    if (r.trigger.isNotBlank()) Text("Déclencheur : ${r.trigger}", color = Gold, fontSize = 13.sp)
-                    if (r.what.isNotBlank()) Text(r.what, color = TextMain, fontSize = 14.sp, lineHeight = 20.sp)
-                    Spacer(Modifier.height(12.dp))
-                }
-            }
-        }
-
-        GhostButton("J'ai rechuté", Modifier.fillMaxWidth(), color = Danger) { showRelapse = true }
         Spacer(Modifier.height(8.dp))
     }
 
     if (showRelapse) RelapseDialog(onDismiss = { showRelapse = false })
+
+    if (showPledge) AlertDialog(
+        onDismissRequest = { showPledge = false },
+        containerColor = Surface1,
+        title = { Text(if (pledged) "Engagement pris ✓" else "Mon engagement du jour", color = Gold, fontFamily = Serif) },
+        text = {
+            Text(
+                if (pledged) "Tu t'es engagé pour aujourd'hui. Tiens parole : un jour à la fois."
+                else "Aujourd'hui, je choisis de rester libre. Pas pour toujours : juste aujourd'hui. Et je tiendrai parole.",
+                color = TextMain, fontSize = 15.sp, lineHeight = 22.sp,
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = { if (!pledged) Store.pledgeToday(); showPledge = false }) {
+                Text(if (pledged) "OK" else "Je m'engage", color = Gold)
+            }
+        },
+        dismissButton = { if (!pledged) TextButton(onClick = { showPledge = false }) { Text("Plus tard", color = TextDim) } },
+    )
+
+    if (showGoal) AlertDialog(
+        onDismissRequest = { showGoal = false },
+        containerColor = Surface1,
+        title = { Text("Mon objectif", color = Gold, fontFamily = Serif) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                GOALS.forEach { g ->
+                    Row(
+                        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
+                            .background(if (g == goal) Gold else Surface2)
+                            .clickable { Store.update { it.copy(freedomGoal = g) }; showGoal = false }
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                    ) { Text(goalName(g), color = if (g == goal) Black else TextMain, fontSize = 15.sp) }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = { showGoal = false }) { Text("Fermer", color = TextDim) } },
+    )
+
+    if (showReminder) AlertDialog(
+        onDismissRequest = { showReminder = false },
+        containerColor = Surface1,
+        title = { Text("Rappel d'engagement", color = Gold, fontFamily = Serif) },
+        text = {
+            Text(
+                "Chaque jour à ${Dates.time(d.pledgeTime)}, si tu ne t'es pas encore engagé, MOI te le rappelle.",
+                color = TextMain, fontSize = 15.sp, lineHeight = 22.sp,
+            )
+        },
+        confirmButton = { TextButton(onClick = { showReminder = false; pickTime = true }) { Text("Changer l'heure", color = Gold) } },
+        dismissButton = {
+            TextButton(onClick = {
+                Store.update { it.copy(pledgeOn = false) }; Reminders.scheduleAll(ctx); showReminder = false
+            }) { Text("Désactiver", color = Danger) }
+        },
+    )
+
+    if (pickTime) TimeDialog(d.pledgeTime, { pickTime = false }) { m ->
+        Store.update { it.copy(pledgeTime = m, pledgeOn = true) }; Reminders.scheduleAll(ctx)
+    }
+}
+
+private val GOALS = listOf(30, 90, 180, 365, 730, 1000)
+
+private fun goalName(days: Int) = when (days) {
+    30 -> "30 jours"
+    90 -> "90 jours"
+    180 -> "6 mois"
+    365 -> "365 jours"
+    730 -> "2 ans"
+    else -> "$days jours"
+}
+
+@Composable
+private fun Num(value: String, label: String) {
+    Column {
+        Text(value, color = TextMain, fontSize = 40.sp, fontFamily = Serif, fontWeight = FontWeight.Bold, lineHeight = 44.sp)
+        Text(label, color = TextMain.copy(alpha = 0.75f), fontSize = 12.sp)
+    }
+}
+
+@Composable
+private fun ActionTile(icon: String, label: String, modifier: Modifier, highlight: Boolean = false, onClick: () -> Unit) {
+    Row(
+        modifier.clip(RoundedCornerShape(16.dp)).background(Surface1)
+            .border(1.dp, if (highlight) Gold else Line, RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick).padding(vertical = 14.dp, horizontal = 6.dp),
+        horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(icon, color = if (highlight) Gold else TextMain, fontSize = 15.sp)
+        Spacer(Modifier.width(6.dp))
+        Text(label, color = if (highlight) Gold else TextMain, fontSize = 13.sp, maxLines = 1)
+    }
+}
+
+/** Toutes les rechutes, de la plus récente à la plus ancienne, avec ce qu'elles ont appris. */
+@Composable
+fun RelapsesScreen(d: AppData, nav: Nav) {
+    Page("Mes rechutes et leçons", onBack = { nav.back() }) {
+        if (d.relapses.isEmpty()) {
+            EmptyState("Aucune rechute enregistrée. Continue comme ça.")
+        } else {
+            d.relapses.reversed().forEach { r ->
+                Card {
+                    Text(formatDate(r.time) + " · après " + formatStreak(r.streakMs), color = TextDim, fontSize = 12.sp)
+                    if (r.trigger.isNotBlank()) {
+                        Spacer(Modifier.height(4.dp))
+                        Text("Déclencheur : ${r.trigger}", color = Gold, fontSize = 13.sp)
+                    }
+                    if (r.what.isNotBlank()) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(r.what, color = TextMain, fontSize = 14.sp, lineHeight = 20.sp)
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
