@@ -71,7 +71,7 @@ private fun DayPlanCard() {
     Card {
         SectionLabel("Ma journée type")
         Spacer(Modifier.height(10.dp))
-        Slot("8 h", "Petit-déjeuner", "La salade d'œufs, avocat et légumes")
+        Slot("8 h", "Petit-déjeuner", "La salade d'œufs, carotte et légumes")
         Slot("12 h", "Séance dans la chambre", "Pompes, squats, gainage, puis la douche")
         Slot("13 h 30", "Déjeuner", "Riz, pâte ou spaghetti avec sauce : ¼ d'assiette de féculent")
         Slot("16 h 30", "Si j'ai faim", "Un fruit : orange, papaye, ananas")
@@ -100,7 +100,7 @@ private fun SaladCard() {
     Card {
         SectionLabel("Le plat du matin")
         Spacer(Modifier.height(8.dp))
-        Text("Salade d'œufs, avocat et légumes", color = Gold, fontSize = 20.sp, fontFamily = Serif)
+        Text("Salade d'œufs, carotte et légumes", color = Gold, fontSize = 20.sp, fontFamily = Serif)
         Spacer(Modifier.height(10.dp))
         Text("Pour 1 personne", color = TextDim, fontSize = 12.sp)
         Spacer(Modifier.height(4.dp))
@@ -108,16 +108,17 @@ private fun SaladCard() {
         Bullet("2 tomates")
         Bullet("1 concombre")
         Bullet("1 petit oignon")
-        Bullet("½ avocat")
+        Bullet("1 carotte râpée")
+        Bullet("1 petite poignée d'arachides grillées")
         Bullet("1 citron, un peu de sel")
         Spacer(Modifier.height(8.dp))
         Text("Préparation", color = TextDim, fontSize = 12.sp)
         Spacer(Modifier.height(4.dp))
         Bullet("1. Fais bouillir les œufs 10 min, passe-les à l'eau froide et écale-les.")
-        Bullet("2. Coupe les tomates, le concombre, l'oignon et l'avocat dans un bol.")
-        Bullet("3. Ajoute les œufs coupés, le jus de citron et le sel. Mélange.")
+        Bullet("2. Coupe les tomates, le concombre, l'oignon et râpe la carotte dans un bol.")
+        Bullet("3. Ajoute les œufs coupés, les arachides, le jus de citron et le sel. Mélange.")
         Spacer(Modifier.height(6.dp))
-        Text("Pas d'avocat ? Mets du chou ou des carottes râpées. Pas de pain ni de gari avec.",
+        Text("Pas de carotte ? Mets du chou. Pas de pain ni de gari avec.",
             color = TextDim, fontSize = 13.sp, lineHeight = 18.sp)
     }
 }
