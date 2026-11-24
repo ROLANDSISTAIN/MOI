@@ -44,12 +44,13 @@ import com.roland.moi.data.Run
 import com.roland.moi.data.Store
 import com.roland.moi.notify.Reminders
 
-fun kindEmoji(k: String) = when (k) { Run.KIND_POMPES -> "💪"; Run.KIND_CORDE -> "🪢"; else -> "🏃" }
-fun kindName(k: String) = when (k) { Run.KIND_POMPES -> "Pompes"; Run.KIND_CORDE -> "Corde à sauter"; else -> "Course" }
+fun kindEmoji(k: String) = when (k) { Run.KIND_POMPES -> "💪"; Run.KIND_CORDE -> "🪢"; Run.KIND_VENTRE -> "🔥"; else -> "🏃" }
+fun kindName(k: String) = when (k) { Run.KIND_POMPES -> "Pompes"; Run.KIND_CORDE -> "Corde à sauter"; Run.KIND_VENTRE -> "Séance ventre"; else -> "Course" }
 
 fun sessionSummary(r: Run): String = when (r.kind) {
     Run.KIND_POMPES -> "${r.count} pompes" + (if (r.sets > 0) " en ${r.sets} séries" else "") + (if (r.minutes > 0) " · ${r.minutes} min" else "")
     Run.KIND_CORDE -> "${r.minutes} min" + if (r.count > 0) " · ${r.count} sauts" else ""
+    Run.KIND_VENTRE -> "${r.minutes} min de fractionné"
     else -> "%.1f km · %d min".format(r.km, r.minutes).replace('.', ',')
 }
 
@@ -107,7 +108,7 @@ fun SportScreen(d: AppData, nav: Nav) {
         ListRow(
             emoji = "🔥",
             title = "Programme perte de poids",
-            subtitle = "Ma journée type, mes deux plats, ma séance et mes mesures",
+            subtitle = "Séance ventre ${VentreSeance.doneThisWeek(d)}/${VentreSeance.PER_WEEK} cette semaine · repas et mesures",
             trailing = d.bodyLogs.lastOrNull { it.weight > 0 }?.let { fmtNum(it.weight) + " kg" } ?: "",
         ) { nav.go(Route.Ventre) }
 

@@ -52,6 +52,7 @@ data class Run(
         const val KIND_CORDE = "corde"
         const val KIND_POMPES = "pompes"
         const val KIND_COURSE = "course"
+        const val KIND_VENTRE = "ventre"   // séance fractionnée « perte du gras du ventre »
     }
 }
 

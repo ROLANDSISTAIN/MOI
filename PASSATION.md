@@ -15,7 +15,7 @@ MOI est « l'application de ma vie » : un espace privé, verrouillé, où Rolan
 
 - **Ma vie** : identité, vision, buts, décisions, réalisations, peurs, désirs, foi, leçons, livres, personnes qui comptent, moments forts, lettres à soi-même, capsule temporelle
 - **Habitudes** quotidiennes avec séries 🔥
-- **Sport** : corde à sauter et pompes, avec un programme pompes de 30 jours (départ à 10 pompes d'affilée) et un programme **perte de poids** (journée type : 8 h salade d’œufs-carotte-arachides, 12 h séance dans la chambre, 13 h 30 riz/pâte/spaghetti avec ¼ d'assiette de féculent, 16 h 30 fruit si faim, rien après 19 h ; mesures poids / tour de taille ; **plus de corde à sauter** dans ce programme)
+- **Sport** : corde à sauter et pompes, avec un programme pompes de 30 jours (départ à 10 pompes d'affilée) et un programme **perte de poids** (journée type : 8 h salade d’œufs-chou-légumes, 12 h séance dans la chambre (fractionné 20 min : 4 tours de montées de genoux, jumping jacks, squats, burpees, 30 s / 30 s ; puis pompes du jour), 13 h 30 riz/pâte/spaghetti avec ¼ d'assiette de féculent, 16 h 30 fruit si faim, rien après 19 h ; mesures poids / tour de taille ; **plus de corde à sauter** dans ce programme)
 - **Journal** du jour, **bilans** de la semaine et du mois, **Mon année**
 - **Liberté** : un compteur de jours et le **Bouclier**, qui détecte les recherches et sites à caractère sexuel dans les navigateurs et les apps sociales, puis affiche un écran plein
 
