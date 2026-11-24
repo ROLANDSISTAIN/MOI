@@ -181,7 +181,7 @@ data class AppData(
     }
 
     companion object {
-        const val SCHEMA = 5
+        const val SCHEMA = 6
 
         fun defaultHabits() = listOf(
             Habit("h_priere", "Prière du matin", "🙏"),

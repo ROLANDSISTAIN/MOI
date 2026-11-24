@@ -43,6 +43,10 @@ object Store {
         if (d.schema < 4) {
             if (d.habits.none { it.id == "h_assiette" }) d = d.copy(habits = d.habits + Habit("h_assiette", "Assiette équilibrée", "🥗"))
         }
+        if (d.schema < 6) {
+            // Nouveau programme pompes (départ à 10 d'affilée) : on repart du début
+            d = d.copy(pushupStart = 0L, pushupMax = 0)
+        }
         return d.copy(schema = AppData.SCHEMA)
     }
 

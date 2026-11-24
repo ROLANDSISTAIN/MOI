@@ -96,22 +96,18 @@ fun SportScreen(d: AppData, nav: Nav) {
             emoji = "📅",
             title = "Programme pompes 30 jours",
             subtitle = when {
-                pDay == 0 -> "Fais le test de départ pour commencer"
-                pDay > PushupPlan.DAYS -> "Terminé 👑 — refais le test"
-                PushupPlan.isRest(pDay) -> "Jour $pDay · repos"
-                else -> "Jour $pDay · objectif ${PushupPlan.target(pDay, d.pushupMax)} pompes"
+                pDay == 0 -> "Pour qui fait 10 pompes d'affilée : commence ici"
+                pDay > PushupPlan.DAYS -> "Terminé 👑"
+                else -> "Jour $pDay · " + PushupPlan.summary(pDay)
             },
             trailing = if (pDay in 1..PushupPlan.DAYS) "$pDay/30" else "",
         ) { nav.go(Route.Pushups) }
 
         // ---- Programme perte de poids ----
-        val vWeek = VentrePlan.week(d)
         ListRow(
             emoji = "🔥",
             title = "Programme perte de poids",
-            subtitle = if (vWeek == 0) "Corde, alimentation et mesures : commence ici"
-            else (if (VentrePlan.isTrainingDay(d)) "Séance aujourd'hui · " else "") +
-                "Semaine $vWeek · ${VentrePlan.doneThisWeek(d)}/${VentrePlan.perWeek(d)} séances",
+            subtitle = "Ma journée type, mes deux plats, ma séance et mes mesures",
             trailing = d.bodyLogs.lastOrNull { it.weight > 0 }?.let { fmtNum(it.weight) + " kg" } ?: "",
         ) { nav.go(Route.Ventre) }
 
