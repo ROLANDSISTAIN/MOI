@@ -294,7 +294,7 @@ fun RouteMap(points: List<GeoPoint>, live: Boolean, modifier: Modifier = Modifie
             setTileSource(TileSourceFactory.MAPNIK)
             setMultiTouchControls(true)
             zoomController.setVisibility(org.osmdroid.views.CustomZoomButtonsController.Visibility.NEVER)
-            overlayManager.tilesOverlay.setColorFilter(TilesOverlay.INVERTED_COLORS)
+            overlayManager.tilesOverlay.setColorFilter(TilesOverlay.INVERT_COLORS)
             overlayManager.tilesOverlay.loadingBackgroundColor = AColor.BLACK
             overlayManager.tilesOverlay.loadingLineColor = Surface2.toArgb()
             setBackgroundColor(AColor.BLACK)
