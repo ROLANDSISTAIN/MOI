@@ -107,11 +107,11 @@ fun SettingsScreen(d: com.roland.moi.data.AppData, nav: Nav, onChangePin: () -> 
                     Text(if (d.quoteOn) "Notification chaque matin à ${com.roland.moi.data.Dates.time(d.quoteTime)}" else "Désactivée",
                         color = TextMain, fontSize = 14.sp)
                 }
-                androidx.compose.material3.TextButton(onClick = { pickQuote = true }) { Text("Heure", color = Gold) }
+                androidx.compose.material3.TextButton(onClick = { pickQuote = true }) { Text("Heure", color = Accent) }
                 Switch(
                     checked = d.quoteOn,
                     onCheckedChange = { on -> Store.update { it.copy(quoteOn = on) }; com.roland.moi.notify.Reminders.scheduleAll(ctx) },
-                    colors = SwitchDefaults.colors(checkedThumbColor = Black, checkedTrackColor = Gold),
+                    colors = SwitchDefaults.colors(checkedThumbColor = OnAccent, checkedTrackColor = Accent),
                 )
             }
             Spacer(Modifier.height(6.dp))
@@ -154,7 +154,7 @@ fun SettingsScreen(d: com.roland.moi.data.AppData, nav: Nav, onChangePin: () -> 
                 Text("Dernière erreur : $err", color = Danger, fontSize = 12.sp)
             }
             Spacer(Modifier.height(12.dp))
-            GoldButton(
+            PrimaryButton(
                 if (busy) "Patiente…" else if (connected) "Sauvegarder maintenant" else "Connecter mon compte Google",
                 Modifier.fillMaxWidth(), enabled = !busy,
             ) { run(Pending.BACKUP) }
@@ -170,7 +170,7 @@ fun SettingsScreen(d: com.roland.moi.data.AppData, nav: Nav, onChangePin: () -> 
                 Switch(
                     checked = bio,
                     onCheckedChange = { bio = it; PinManager.setBiometric(ctx, it) },
-                    colors = SwitchDefaults.colors(checkedThumbColor = Black, checkedTrackColor = Gold),
+                    colors = SwitchDefaults.colors(checkedThumbColor = OnAccent, checkedTrackColor = Accent),
                 )
             }
             Spacer(Modifier.height(8.dp))
@@ -192,9 +192,9 @@ fun SettingsScreen(d: com.roland.moi.data.AppData, nav: Nav, onChangePin: () -> 
         AlertDialog(
             onDismissRequest = { confirmRestore = false },
             containerColor = Surface1,
-            title = { Text("Restaurer ?", color = Gold) },
+            title = { Text("Restaurer ?", color = Accent) },
             text = { Text("Les données de ta dernière sauvegarde Google Drive vont remplacer celles de ce téléphone.", color = TextMain) },
-            confirmButton = { TextButton(onClick = { confirmRestore = false; run(Pending.RESTORE) }) { Text("Restaurer", color = Gold) } },
+            confirmButton = { TextButton(onClick = { confirmRestore = false; run(Pending.RESTORE) }) { Text("Restaurer", color = Accent) } },
             dismissButton = { TextButton(onClick = { confirmRestore = false }) { Text("Annuler", color = TextDim) } },
         )
     }

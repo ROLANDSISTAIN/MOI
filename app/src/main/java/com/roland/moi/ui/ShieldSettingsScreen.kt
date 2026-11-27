@@ -55,7 +55,7 @@ fun ShieldSettingsScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
             )
             if (!shieldOn) {
                 Spacer(Modifier.height(10.dp))
-                GoldButton("Ouvrir Accessibilité", Modifier.fillMaxWidth()) {
+                PrimaryButton("Ouvrir Accessibilité", Modifier.fillMaxWidth()) {
                     ctx.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 }
             }
@@ -77,10 +77,10 @@ fun ShieldSettingsScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
             Text("Délai avant de pouvoir fermer : ${delay.toInt()} secondes", color = TextMain, fontSize = 14.sp)
             Slider(
                 value = delay, onValueChange = { delay = it }, valueRange = 10f..120f, steps = 10,
-                colors = SliderDefaults.colors(thumbColor = Gold, activeTrackColor = Gold, inactiveTrackColor = Surface2),
+                colors = SliderDefaults.colors(thumbColor = Accent, activeTrackColor = Accent, inactiveTrackColor = Surface2),
             )
             Spacer(Modifier.height(6.dp))
-            GoldButton("Enregistrer", Modifier.fillMaxWidth(), enabled = changed) {
+            PrimaryButton("Enregistrer", Modifier.fillMaxWidth(), enabled = changed) {
                 Store.update { it.copy(shieldMessage = message.trim(), shieldVerse = verse.trim(), shieldDelaySec = delay.toInt()) }
                 Toast.makeText(ctx, "Enregistré", Toast.LENGTH_SHORT).show()
             }
@@ -102,7 +102,7 @@ fun ShieldSettingsScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
                 label = { Text("Site ou mot") }, modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(8.dp))
-            GoldButton("Ajouter à ma liste", Modifier.fillMaxWidth(), enabled = Keywords.compact(Keywords.cleanExtra(newSite)).length >= 4) {
+            PrimaryButton("Ajouter à ma liste", Modifier.fillMaxWidth(), enabled = Keywords.compact(Keywords.cleanExtra(newSite)).length >= 4) {
                 val w = Keywords.cleanExtra(newSite)
                 Store.update { cur ->
                     if (cur.shieldExtraWords.any { Keywords.compact(it) == Keywords.compact(w) }) cur
@@ -149,7 +149,7 @@ fun ShieldSettingsScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
                 Switch(
                     checked = d.socialShield,
                     onCheckedChange = { on -> Store.update { it.copy(socialShield = on) } },
-                    colors = SwitchDefaults.colors(checkedThumbColor = Black, checkedTrackColor = Gold),
+                    colors = SwitchDefaults.colors(checkedThumbColor = OnAccent, checkedTrackColor = Accent),
                 )
             }
         }
@@ -167,7 +167,7 @@ fun ShieldSettingsScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
                 Switch(
                     checked = d.blockVpnBrowsers,
                     onCheckedChange = { on -> Store.update { it.copy(blockVpnBrowsers = on) } },
-                    colors = SwitchDefaults.colors(checkedThumbColor = Black, checkedTrackColor = Gold),
+                    colors = SwitchDefaults.colors(checkedThumbColor = OnAccent, checkedTrackColor = Accent),
                 )
             }
         }

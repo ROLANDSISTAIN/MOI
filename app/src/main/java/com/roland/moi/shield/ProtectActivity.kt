@@ -20,9 +20,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.roland.moi.ui.Black
 import com.roland.moi.ui.GhostButton
-import com.roland.moi.ui.Gold
+import com.roland.moi.ui.Accent
 import com.roland.moi.ui.MoiTheme
-import com.roland.moi.ui.Serif
+import com.roland.moi.ui.Display
 import com.roland.moi.ui.TextDim
 import com.roland.moi.ui.TextMain
 
@@ -39,7 +39,7 @@ class ProtectActivity : ComponentActivity() {
                 ) {
                     Text("👑", fontSize = 48.sp)
                     Spacer(Modifier.height(16.dp))
-                    Text("MOI est protégée", color = Gold, fontSize = 28.sp, fontFamily = Serif, textAlign = TextAlign.Center)
+                    Text("MOI est protégée", color = Accent, fontSize = 28.sp, fontFamily = Display, textAlign = TextAlign.Center)
                     Spacer(Modifier.height(16.dp))
                     Text(
                         "Tu as choisi de te protéger de tes moments faibles. " +

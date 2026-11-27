@@ -106,12 +106,12 @@ fun YearScreen(d: AppData, year: Int, nav: Nav) {
         }
 
         Column(
-            Modifier.fillMaxWidth().background(Surface1, RoundedCornerShape(22.dp)).border(1.dp, Gold, RoundedCornerShape(22.dp)).padding(24.dp),
+            Modifier.fillMaxWidth().background(Surface1, RoundedCornerShape(22.dp)).border(1.dp, Accent, RoundedCornerShape(22.dp)).padding(24.dp),
         ) {
-            Text("$year", color = Gold, fontSize = 64.sp, fontFamily = Serif, fontWeight = FontWeight.Bold)
+            Text("$year", color = Accent, fontSize = 64.sp, fontFamily = Display, fontWeight = FontWeight.Bold)
             Text(
                 if (year == now) "Ton année jusqu'ici, Roland." else "Ton année, Roland.",
-                color = TextMain, fontSize = 18.sp, fontFamily = Serif,
+                color = TextMain, fontSize = 18.sp, fontFamily = Display,
             )
             Spacer(Modifier.height(6.dp))
             Text("${s.trackedDays} jours vécus avec MOI", color = TextDim, fontSize = 13.sp)
@@ -154,7 +154,7 @@ fun YearScreen(d: AppData, year: Int, nav: Nav) {
         Spacer(Modifier.height(8.dp))
         Text(
             "Chaque jour compte. Continue de construire l'homme que tu deviens. 👑",
-            color = Gold, fontSize = 17.sp, lineHeight = 24.sp, fontFamily = Serif, textAlign = TextAlign.Center,
+            color = Accent, fontSize = 17.sp, lineHeight = 24.sp, fontFamily = Display, textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(),
         )
     }
@@ -166,7 +166,7 @@ private fun Big(emoji: String, value: String, label: String, detail: String) {
         Row(verticalAlignment = androidx.compose.ui.Alignment.Bottom) {
             Text(emoji, fontSize = 26.sp, modifier = Modifier.padding(bottom = 8.dp))
             Spacer(Modifier.padding(start = 10.dp))
-            Text(value, color = Gold, fontSize = 48.sp, fontFamily = Serif, fontWeight = FontWeight.Bold, lineHeight = 50.sp)
+            Text(value, color = Accent, fontSize = 48.sp, fontFamily = Display, fontWeight = FontWeight.Bold, lineHeight = 50.sp)
             Spacer(Modifier.padding(start = 8.dp))
             Text(label, color = TextMain, fontSize = 16.sp, modifier = Modifier.padding(bottom = 10.dp))
         }

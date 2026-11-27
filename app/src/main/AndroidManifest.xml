@@ -7,6 +7,14 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- Course GPS : suivi par satellite, même écran éteint (service au premier plan) -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+
     <!-- Pour trouver tous les navigateurs installés (le Bouclier les surveille tous, même inconnus) -->
     <queries>
         <intent>
@@ -83,5 +91,10 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/shield_service" />
         </service>
+
+        <service
+            android:name=".run.RunService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
     </application>
 </manifest>

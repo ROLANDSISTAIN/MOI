@@ -1,14 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Une couronne dorée, simple et discrète -->
+<!-- La couronne de MOI, en dégradé bleu électrique → rouge néon -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path
-        android:fillColor="#D4AF37"
-        android:pathData="M34,68 L30,42 L43,53 L54,36 L65,53 L78,42 L74,68 Z" />
-    <path
-        android:fillColor="#D4AF37"
-        android:pathData="M34,72 L74,72 L74,77 L34,77 Z" />
+    <path android:pathData="M34,68 L30,42 L43,53 L54,36 L65,53 L78,42 L74,68 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="30" android:startY="36"
+                android:endX="78" android:endY="77"
+                android:startColor="#FF007BFF"
+                android:endColor="#FFFF073A" />
+        </aapt:attr>
+    </path>
+    <path android:pathData="M34,72 L74,72 L74,77 L34,77 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="34" android:startY="72"
+                android:endX="74" android:endY="77"
+                android:startColor="#FF007BFF"
+                android:endColor="#FFFF073A" />
+        </aapt:attr>
+    </path>
 </vector>

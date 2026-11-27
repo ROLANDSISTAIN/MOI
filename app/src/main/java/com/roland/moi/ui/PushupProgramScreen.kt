@@ -115,7 +115,7 @@ fun PushupProgramScreen(d: AppData, nav: Nav) {
                     )
                 }
                 Grid(d, PushupPlan.DAYS + 1)
-                GoldButton("Recommencer le programme", Modifier.fillMaxWidth()) {
+                PrimaryButton("Recommencer le programme", Modifier.fillMaxWidth()) {
                     Store.update { it.copy(pushupStart = Dates.startOfDay(), pushupMax = PushupPlan.START_MAX) }
                 }
             }
@@ -129,7 +129,7 @@ private fun Start() {
     Card {
         SectionLabel("Le programme")
         Spacer(Modifier.height(8.dp))
-        Text("Pour qui fait 10 pompes d'affilée", color = Gold, fontSize = 22.sp, fontFamily = Serif)
+        Text("Pour qui fait 10 pompes d'affilée", color = Accent, fontSize = 22.sp, fontFamily = Display)
         Spacer(Modifier.height(8.dp))
         Bullet("5 séries par jour, 1 min de repos entre chaque")
         Bullet("Semaine 1 : 27 pompes par jour (6 · 6 · 5 · 5 · 5)")
@@ -141,7 +141,7 @@ private fun Start() {
         Text("Dos droit, ventre serré, la poitrine descend presque au sol. Si une série est trop dure, finis-la sur les genoux.",
             color = TextDim, fontSize = 13.sp, lineHeight = 18.sp)
         Spacer(Modifier.height(12.dp))
-        GoldButton("Commencer aujourd'hui", Modifier.fillMaxWidth()) {
+        PrimaryButton("Commencer aujourd'hui", Modifier.fillMaxWidth()) {
             Store.update { it.copy(pushupStart = Dates.startOfDay(), pushupMax = PushupPlan.START_MAX) }
         }
     }
@@ -156,7 +156,7 @@ private fun Today(d: AppData, day: Int) {
         Spacer(Modifier.height(8.dp))
         when {
             PushupPlan.isRest(day) -> {
-                Text("Jour de repos 😌", color = Gold, fontSize = 28.sp, fontFamily = Serif)
+                Text("Jour de repos 😌", color = Accent, fontSize = 28.sp, fontFamily = Display)
                 Spacer(Modifier.height(6.dp))
                 Text("Tes muscles grandissent pendant le repos.", color = TextMain, fontSize = 14.sp, lineHeight = 20.sp)
             }
@@ -164,24 +164,24 @@ private fun Today(d: AppData, day: Int) {
             else -> {
                 val target = PushupPlan.target(day)
                 val done = PushupPlan.doneOn(d, day)
-                Text("$target pompes", color = Gold, fontSize = 44.sp, fontFamily = Serif, fontWeight = FontWeight.Bold)
+                Text("$target pompes", color = Accent, fontSize = 44.sp, fontFamily = Display, fontWeight = FontWeight.Bold)
                 Text(PushupPlan.sets(day).joinToString("  ·  "), color = TextMain, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
                 Text("${PushupPlan.SETS} séries · 1 min de repos entre chaque", color = TextDim, fontSize = 13.sp)
                 Spacer(Modifier.height(14.dp))
                 Row {
                     Text("Fait aujourd'hui", color = TextDim, fontSize = 13.sp, modifier = Modifier.weight(1f))
-                    Text("$done / $target", color = Gold, fontSize = 13.sp)
+                    Text("$done / $target", color = Accent, fontSize = 13.sp)
                 }
                 Spacer(Modifier.height(6.dp))
                 LinearProgressIndicator(
                     progress = { (done.toFloat() / target).coerceIn(0f, 1f) },
-                    modifier = Modifier.fillMaxWidth().height(6.dp), color = Gold, trackColor = Surface2, drawStopIndicator = {},
+                    modifier = Modifier.fillMaxWidth().height(6.dp), color = Accent, trackColor = Surface2, drawStopIndicator = {},
                 )
                 Spacer(Modifier.height(14.dp))
                 if (done >= target) {
-                    Text("Objectif du jour atteint 💪", color = Gold, fontSize = 15.sp)
+                    Text("Objectif du jour atteint 💪", color = Accent, fontSize = 15.sp)
                 } else {
-                    GoldButton("J'ai fait mes ${PushupPlan.SETS} séries", Modifier.fillMaxWidth()) {
+                    PrimaryButton("J'ai fait mes ${PushupPlan.SETS} séries", Modifier.fillMaxWidth()) {
                         Store.saveRun(Run(id = Store.newId(), date = System.currentTimeMillis(), kind = Run.KIND_POMPES,
                             count = target - done, sets = PushupPlan.SETS, feeling = 4, note = "Programme · jour $day"))
                     }
@@ -208,10 +208,10 @@ private fun FinalTest(d: AppData) {
     val res = PushupPlan.testResult(d)
     var text by remember { mutableStateOf("") }
     val n = text.toIntOrNull() ?: 0
-    Text("Test final 🏁", color = Gold, fontSize = 28.sp, fontFamily = Serif)
+    Text("Test final 🏁", color = Accent, fontSize = 28.sp, fontFamily = Display)
     Spacer(Modifier.height(6.dp))
     if (res > 0) {
-        Text("$res pompes d'affilée", color = Gold, fontSize = 36.sp, fontFamily = Serif, fontWeight = FontWeight.Bold)
+        Text("$res pompes d'affilée", color = Accent, fontSize = 36.sp, fontFamily = Display, fontWeight = FontWeight.Bold)
         Text("Au départ : ${PushupPlan.START_MAX}. ${if (res > PushupPlan.START_MAX) "+${res - PushupPlan.START_MAX} en 30 jours 👑" else ""}",
             color = TextMain, fontSize = 14.sp)
     } else {
@@ -224,7 +224,7 @@ private fun FinalTest(d: AppData) {
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         )
         Spacer(Modifier.height(12.dp))
-        GoldButton("Enregistrer mon test", Modifier.fillMaxWidth(), enabled = n > 0) {
+        PrimaryButton("Enregistrer mon test", Modifier.fillMaxWidth(), enabled = n > 0) {
             Store.saveRun(Run(id = Store.newId(), date = System.currentTimeMillis(), kind = Run.KIND_POMPES,
                 count = n, sets = 1, feeling = 5, note = PushupPlan.TEST_NOTE))
         }
@@ -234,7 +234,7 @@ private fun FinalTest(d: AppData) {
 @Composable
 private fun Bullet(text: String) {
     Row(Modifier.fillMaxWidth()) {
-        Text("•", color = Gold, fontSize = 14.sp)
+        Text("•", color = Accent, fontSize = 14.sp)
         Spacer(Modifier.width(8.dp))
         Text(text, color = TextMain, fontSize = 14.sp, lineHeight = 20.sp, modifier = Modifier.weight(1f))
     }
@@ -252,19 +252,19 @@ private fun Grid(d: AppData, today: Int) {
                     val past = day < today
                     val ok = day <= today && PushupPlan.success(d, day)
                     val bg = when {
-                        ok && !PushupPlan.isRest(day) -> Gold
+                        ok && !PushupPlan.isRest(day) -> Accent
                         PushupPlan.isRest(day) -> Surface2
                         past -> Danger.copy(alpha = 0.35f)
                         else -> Black
                     }
                     Box(
                         Modifier.weight(1f).aspectRatio(1f).clip(RoundedCornerShape(8.dp)).background(bg)
-                            .border(if (day == today) 2.dp else 1.dp, if (day == today) Gold else Line, RoundedCornerShape(8.dp)),
+                            .border(if (day == today) 2.dp else 1.dp, if (day == today) Accent else Line, RoundedCornerShape(8.dp)),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
                             if (PushupPlan.isRest(day)) "😌" else if (PushupPlan.isTest(day)) "🏁" else "$day",
-                            color = if (ok && !PushupPlan.isRest(day)) Black else TextDim, fontSize = 12.sp,
+                            color = if (ok && !PushupPlan.isRest(day)) OnAccent else TextDim, fontSize = 12.sp,
                         )
                     }
                 }

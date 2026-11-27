@@ -42,8 +42,8 @@ fun HabitsScreen(d: AppData, nav: Nav) {
     val now = System.currentTimeMillis()
     val last7 = (6 downTo 0).map { Dates.addDays(now, -it) }
 
-    Page("Mes habitudes", onBack = null, actions = {
-        androidx.compose.material3.TextButton(onClick = { nav.go(Route.HabitsEdit) }) { Text("Modifier", color = Gold) }
+    Page("Mes habitudes", onBack = { nav.back() }, actions = {
+        androidx.compose.material3.TextButton(onClick = { nav.go(Route.HabitsEdit) }) { Text("Modifier", color = Accent) }
     }) {
         val done = d.habits.count { today in it.done }
         Text(
@@ -56,7 +56,7 @@ fun HabitsScreen(d: AppData, nav: Nav) {
             val streak = Dates.streak(h.done)
             Column(
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Surface1)
-                    .border(1.dp, if (isDone) Gold else Line, RoundedCornerShape(18.dp))
+                    .border(1.dp, if (isDone) Accent else Line, RoundedCornerShape(18.dp))
                     .clickable { Store.toggleHabit(h.id) }.padding(16.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -80,7 +80,7 @@ fun HabitsScreen(d: AppData, nav: Nav) {
                             Spacer(Modifier.height(4.dp))
                             Box(
                                 Modifier.size(22.dp).clip(CircleShape)
-                                    .background(if (k in h.done) Gold else Surface2)
+                                    .background(if (k in h.done) Accent else Surface2)
                                     .clickable { Store.toggleHabit(h.id, k) },
                             )
                         }
@@ -119,7 +119,7 @@ fun HabitsEditScreen(d: AppData, nav: Nav) {
         ) {
             EMOJIS.forEach { e -> Chip(e, emoji == e) { emoji = e } }
         }
-        GoldButton("Ajouter", Modifier.fillMaxWidth(), enabled = name.isNotBlank()) {
+        PrimaryButton("Ajouter", Modifier.fillMaxWidth(), enabled = name.isNotBlank()) {
             Store.saveHabit(Habit(Store.newId(), name.trim(), emoji))
             name = ""
         }

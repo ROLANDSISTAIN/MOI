@@ -61,13 +61,13 @@ fun SosScreen(d: AppData, nav: Nav) {
             SosStep.DONE -> {
                 Spacer(Modifier.height(40.dp))
                 Text("👑", fontSize = 56.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
-                Text("Victoire.", color = Gold, fontSize = 34.sp, fontFamily = Serif, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                Text("Victoire.", color = Accent, fontSize = 34.sp, fontFamily = Display, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
                 Text(
                     "Tu as choisi l'homme que tu veux devenir. Elle compte dans tes victoires.",
                     color = TextMain, fontSize = 16.sp, lineHeight = 23.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
                 )
                 Spacer(Modifier.height(20.dp))
-                GoldButton("Retour", Modifier.fillMaxWidth()) { nav.back() }
+                PrimaryButton("Retour", Modifier.fillMaxWidth()) { nav.back() }
             }
         }
     }
@@ -111,16 +111,16 @@ internal fun Breathe(doneLabel: String = "Continuer", onDone: () -> Unit) {
         Text("Respire avec le cercle.", color = TextDim, fontSize = 15.sp)
         Spacer(Modifier.height(30.dp))
         Box(Modifier.size(260.dp), contentAlignment = Alignment.Center) {
-            Box(Modifier.size(260.dp).scale(scale.value).background(Gold.copy(alpha = 0.18f), CircleShape).border(2.dp, Gold, CircleShape))
+            Box(Modifier.size(260.dp).scale(scale.value).background(Accent.copy(alpha = 0.18f), CircleShape).border(2.dp, Accent, CircleShape))
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(label, color = Gold, fontSize = 30.sp, fontFamily = Serif)
+                Text(label, color = Accent, fontSize = 30.sp, fontFamily = Display)
                 if (cycle > 0 && !finished) Text("$cycle / 4", color = TextDim, fontSize = 13.sp)
             }
         }
         Spacer(Modifier.height(30.dp))
         Text("La tentation est une vague. Elle monte, puis elle redescend. Toujours.", color = TextMain, fontSize = 15.sp, lineHeight = 22.sp, textAlign = TextAlign.Center)
         Spacer(Modifier.height(24.dp))
-        GoldButton(if (finished) doneLabel else "Passer", Modifier.fillMaxWidth(), onClick = onDone)
+        PrimaryButton(if (finished) doneLabel else "Passer", Modifier.fillMaxWidth(), onClick = onDone)
     }
 }
 
@@ -132,26 +132,26 @@ internal fun Words(d: AppData, button: String = "Maintenant, bouge", onNext: () 
         Card {
             SectionLabel("Ce que tu as déjà gagné")
             Spacer(Modifier.height(6.dp))
-            Text("$streakDays jour${if (streakDays > 1) "s" else ""} de liberté · ${d.resistCount} victoires", color = Gold, fontSize = 18.sp, fontFamily = Serif)
+            Text("$streakDays jour${if (streakDays > 1) "s" else ""} de liberté · ${d.resistCount} victoires", color = Accent, fontSize = 18.sp, fontFamily = Display)
         }
         if (letter != null) {
             Card {
                 SectionLabel(letter.source)
                 Spacer(Modifier.height(8.dp))
-                Text(letter.text, color = TextMain, fontSize = 17.sp, lineHeight = 25.sp, fontFamily = Serif)
+                Text(letter.text, color = TextMain, fontSize = 17.sp, lineHeight = 25.sp, fontFamily = Display)
             }
         }
         Card {
             Text(d.shieldMessage, color = TextMain, fontSize = 16.sp, lineHeight = 23.sp)
             if (d.shieldVerse.isNotBlank()) {
                 Spacer(Modifier.height(10.dp))
-                Text(d.shieldVerse, color = Gold, fontSize = 15.sp, fontStyle = FontStyle.Italic)
+                Text(d.shieldVerse, color = Accent, fontSize = 15.sp, fontStyle = FontStyle.Italic)
             }
         }
         if (letter == null) {
             Text("Astuce : écris une « Lettre à moi-même » dans Ma vie. Elle s'affichera ici.", color = TextDim, fontSize = 12.sp)
         }
-        GoldButton(button, Modifier.fillMaxWidth(), onClick = onNext)
+        PrimaryButton(button, Modifier.fillMaxWidth(), onClick = onNext)
     }
 }
 
@@ -160,7 +160,7 @@ private fun Move(onFinish: (Boolean) -> Unit) {
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
         Spacer(Modifier.height(20.dp))
         Text("💪", fontSize = 64.sp)
-        Text("20 pompes", color = Gold, fontSize = 40.sp, fontFamily = Serif, fontWeight = FontWeight.Bold)
+        Text("20 pompes", color = Accent, fontSize = 40.sp, fontFamily = Display, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(12.dp))
         Text(
             "Pose le téléphone. Fais-les maintenant, même lentement, même en plusieurs fois. " +
@@ -168,7 +168,7 @@ private fun Move(onFinish: (Boolean) -> Unit) {
             color = TextMain, fontSize = 16.sp, lineHeight = 23.sp, textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(30.dp))
-        GoldButton("C'est fait ✓", Modifier.fillMaxWidth()) { onFinish(true) }
+        PrimaryButton("C'est fait ✓", Modifier.fillMaxWidth()) { onFinish(true) }
         Spacer(Modifier.height(10.dp))
         GhostButton("Je ne peux pas maintenant", Modifier.fillMaxWidth(), color = TextDim) { onFinish(false) }
     }

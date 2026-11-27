@@ -1,5 +1,16 @@
 package com.roland.moi.ui
 
+import com.roland.moi.run.RunTracker
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.collectAsState
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.outlined.DirectionsRun
+import androidx.compose.material.icons.outlined.Cable
+import androidx.compose.material.icons.outlined.LocalFireDepartment
+import androidx.compose.material.icons.outlined.FitnessCenter
+import androidx.compose.material.icons.outlined.PlayArrow
+import androidx.compose.material.icons.Icons
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -44,6 +55,13 @@ import com.roland.moi.data.Run
 import com.roland.moi.data.Store
 import com.roland.moi.notify.Reminders
 
+fun kindIcon(k: String): androidx.compose.ui.graphics.vector.ImageVector = when (k) {
+    Run.KIND_POMPES -> Icons.Outlined.FitnessCenter
+    Run.KIND_CORDE -> Icons.Outlined.Cable
+    Run.KIND_VENTRE -> Icons.Outlined.LocalFireDepartment
+    else -> Icons.Outlined.DirectionsRun
+}
+
 fun kindEmoji(k: String) = when (k) { Run.KIND_POMPES -> "💪"; Run.KIND_CORDE -> "🪢"; Run.KIND_VENTRE -> "🔥"; else -> "🏃" }
 fun kindName(k: String) = when (k) { Run.KIND_POMPES -> "Pompes"; Run.KIND_CORDE -> "Corde à sauter"; Run.KIND_VENTRE -> "Séance ventre"; else -> "Course" }
 
@@ -51,7 +69,9 @@ fun sessionSummary(r: Run): String = when (r.kind) {
     Run.KIND_POMPES -> "${r.count} pompes" + (if (r.sets > 0) " en ${r.sets} séries" else "") + (if (r.minutes > 0) " · ${r.minutes} min" else "")
     Run.KIND_CORDE -> "${r.minutes} min" + if (r.count > 0) " · ${r.count} sauts" else ""
     Run.KIND_VENTRE -> "${r.minutes} min de fractionné"
-    else -> "%.1f km · %d min".format(r.km, r.minutes).replace('.', ',')
+    else -> "%.2f km · ".format(r.km).replace('.', ',') +
+        RunTracker.duration((if (r.seconds > 0) r.seconds else r.minutes * 60).toLong()) +
+        (if (r.km > 0.05) " · " + RunTracker.pace(((if (r.seconds > 0) r.seconds else r.minutes * 60) / r.km).toInt()) + " /km" else "")
 }
 
 @Composable
@@ -74,44 +94,64 @@ fun SportScreen(d: AppData, nav: Nav) {
         Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Text("Sport", color = Gold, fontSize = 30.sp, fontFamily = Serif)
+        TabHeader("Sport", "$streak jour${if (streak > 1) "s" else ""} d'affilée")
 
-        Card {
-            SectionLabel("Jours d'affilée")
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text("$streak", color = Gold, fontSize = 72.sp, fontFamily = Serif, fontWeight = FontWeight.Bold, lineHeight = 72.sp)
-                Spacer(Modifier.width(8.dp))
-                Text("🔥", fontSize = 26.sp, modifier = Modifier.padding(bottom = 12.dp))
-            }
-            Text("Aujourd'hui : 🪢 $todayCorde min · 💪 $todayPompes pompes", color = TextMain, fontSize = 14.sp)
-            Spacer(Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                GoldButton("🪢 Corde", Modifier.weight(1f)) { adding = Run.KIND_CORDE }
-                GoldButton("💪 Pompes", Modifier.weight(1f)) { adding = Run.KIND_POMPES }
+        // ---- Courir ----
+        val run by RunTracker.state.collectAsState()
+        val courses = d.runs.filter { it.kind == Run.KIND_COURSE }
+        HeroCard(Modifier.clickable { nav.go(Route.Run) }) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    SectionLabel(if (run.status == RunTracker.idle) "Course" else "Course en cours")
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        if (run.status == RunTracker.idle) "Courir" else "${RunTracker.km(run.km)} km",
+                        color = TextMain, fontSize = 30.sp, fontFamily = Display, fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        "${RunTracker.km(courses.filter { it.date >= weekStart }.sumOf { it.km })} km cette semaine · GPS sans connexion",
+                        color = TextDim, fontSize = 12.sp,
+                    )
+                }
+                Box(Modifier.size(64.dp).clip(CircleShape).background(Accent), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Outlined.PlayArrow, "Courir", tint = OnAccent, modifier = Modifier.size(34.dp))
+                }
             }
         }
 
-        // ---- Programme pompes 30 jours ----
+        // ---- Aujourd'hui ----
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            StatTile("$todayPompes", "pompes aujourd'hui", Modifier.weight(1f))
+            StatTile("$todayCorde min", "corde aujourd'hui", Modifier.weight(1f))
+            StatTile("$streak", "jours d'affilée", Modifier.weight(1f), AccentSoft)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            GhostButton("+ Pompes", Modifier.weight(1f)) { adding = Run.KIND_POMPES }
+            GhostButton("+ Corde", Modifier.weight(1f)) { adding = Run.KIND_CORDE }
+        }
+
+        // ---- Programmes ----
+        SectionLabel("Mes programmes")
         val pDay = PushupPlan.dayIndex(d)
         ListRow(
-            emoji = "📅",
-            title = "Programme pompes 30 jours",
-            subtitle = when {
+            Icons.Outlined.FitnessCenter,
+            "Pompes · 30 jours",
+            when {
                 pDay == 0 -> "Pour qui fait 10 pompes d'affilée : commence ici"
-                pDay > PushupPlan.DAYS -> "Terminé 👑"
+                pDay > PushupPlan.DAYS -> "Terminé"
                 else -> "Jour $pDay · " + PushupPlan.summary(pDay)
             },
-            trailing = if (pDay in 1..PushupPlan.DAYS) "$pDay/30" else "",
+            if (pDay in 1..PushupPlan.DAYS) "$pDay/30" else "",
         ) { nav.go(Route.Pushups) }
-
-        // ---- Programme perte de poids ----
         ListRow(
-            emoji = "🔥",
-            title = "Programme perte de poids",
-            subtitle = "Séance ventre ${VentreSeance.doneThisWeek(d)}/${VentreSeance.PER_WEEK} cette semaine · repas et mesures",
-            trailing = d.bodyLogs.lastOrNull { it.weight > 0 }?.let { fmtNum(it.weight) + " kg" } ?: "",
+            Icons.Outlined.LocalFireDepartment,
+            "Perte de poids",
+            "Séance ventre ${VentreSeance.doneThisWeek(d)}/${VentreSeance.PER_WEEK} cette semaine · repas · mesures",
+            d.bodyLogs.lastOrNull { it.weight > 0 }?.let { fmtNum(it.weight) + " kg" } ?: "",
+            tint = Neon,
         ) { nav.go(Route.Ventre) }
 
+        SectionLabel("Mes chiffres")
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             SmallStat("Pompes\ncette semaine", "${pompes.filter { it.date >= weekStart }.sumOf { it.count }}", Modifier.weight(1f))
             SmallStat("Corde\ncette semaine", "${corde.filter { it.date >= weekStart }.sumOf { it.minutes }} min", Modifier.weight(1f))
@@ -129,15 +169,18 @@ fun SportScreen(d: AppData, nav: Nav) {
                 SectionLabel("Mes records")
                 Spacer(Modifier.height(8.dp))
                 pompes.maxByOrNull { it.count }?.let {
-                    Text("💪 Plus de pompes en une séance : ${it.count} (${Dates.shortDate(it.date)})", color = TextMain, fontSize = 14.sp)
+                    Text("Plus de pompes en une séance : ${it.count} (${Dates.shortDate(it.date)})", color = TextMain, fontSize = 14.sp)
                 }
                 pompes.filter { it.sets > 0 }.maxByOrNull { it.count / it.sets }?.let {
-                    Text("🔝 Meilleure série : ~${it.count / it.sets} pompes (${Dates.shortDate(it.date)})", color = TextMain, fontSize = 14.sp)
+                    Text("Meilleure série : ~${it.count / it.sets} pompes (${Dates.shortDate(it.date)})", color = TextMain, fontSize = 14.sp)
                 }
                 corde.maxByOrNull { it.minutes }?.let {
-                    Text("🪢 Plus longue séance de corde : ${it.minutes} min (${Dates.shortDate(it.date)})", color = TextMain, fontSize = 14.sp)
+                    Text("Plus longue séance de corde : ${it.minutes} min (${Dates.shortDate(it.date)})", color = TextMain, fontSize = 14.sp)
                 }
-                Text("📅 Meilleure série de jours : ${Dates.bestStreak(days)}", color = TextMain, fontSize = 14.sp)
+                courses.maxByOrNull { it.km }?.let {
+                    Text("Plus longue course : ${RunTracker.km(it.km)} km (${Dates.shortDate(it.date)})", color = TextMain, fontSize = 14.sp)
+                }
+                Text("Meilleure série de jours : ${Dates.bestStreak(days)}", color = TextMain, fontSize = 14.sp)
             }
         }
 
@@ -148,11 +191,11 @@ fun SportScreen(d: AppData, nav: Nav) {
                     Spacer(Modifier.height(4.dp))
                     Text(if (d.sportOn) "Chaque jour à ${Dates.time(d.sportTime)}" else "Désactivé", color = TextMain, fontSize = 14.sp)
                 }
-                TextButton(onClick = { pickTime = true }) { Text("Heure", color = Gold) }
+                TextButton(onClick = { pickTime = true }) { Text("Heure", color = Accent) }
                 Switch(
                     checked = d.sportOn,
                     onCheckedChange = { on -> Store.update { it.copy(sportOn = on) }; Reminders.scheduleAll(ctx) },
-                    colors = SwitchDefaults.colors(checkedThumbColor = Black, checkedTrackColor = Gold),
+                    colors = SwitchDefaults.colors(checkedThumbColor = OnAccent, checkedTrackColor = Accent),
                 )
             }
         }
@@ -162,10 +205,11 @@ fun SportScreen(d: AppData, nav: Nav) {
             d.runs.sortedByDescending { it.date }.take(60).forEach { r ->
                 Row(
                     Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Surface1)
-                        .border(1.dp, Line, RoundedCornerShape(14.dp)).clickable { edit = r }.padding(14.dp),
+                        .border(1.dp, Line, RoundedCornerShape(14.dp))
+                        .clickable { if (r.kind == Run.KIND_COURSE) nav.go(Route.RunView(r.id)) else edit = r }.padding(14.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(kindEmoji(r.kind), fontSize = 22.sp)
+                    IconBadge(kindIcon(r.kind), if (r.kind == Run.KIND_VENTRE) Neon else AccentSoft, 38.dp)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(Dates.longDate(r.date), color = TextMain, fontSize = 14.sp)
@@ -200,7 +244,7 @@ private fun WeekChart(title: String, runs: List<Run>, kind: String, weekStart: L
                     Spacer(Modifier.height(4.dp))
                     Box(
                         Modifier.fillMaxWidth().fillMaxHeight((vals[i] / max).toFloat().coerceAtLeast(0.03f) * 0.7f)
-                            .clip(RoundedCornerShape(6.dp)).background(if (i == 3) Gold else Gold.copy(alpha = 0.45f))
+                            .clip(RoundedCornerShape(6.dp)).background(if (i == 3) Accent else Accent.copy(alpha = 0.45f))
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(if (i == 3) "Cette sem." else Dates.shortDate(ws).substringBeforeLast(" "), color = TextDim, fontSize = 10.sp, maxLines = 1)
@@ -213,7 +257,7 @@ private fun WeekChart(title: String, runs: List<Run>, kind: String, weekStart: L
 @Composable
 private fun SmallStat(label: String, value: String, modifier: Modifier) {
     Column(modifier.background(Surface1, RoundedCornerShape(16.dp)).border(1.dp, Line, RoundedCornerShape(16.dp)).padding(14.dp)) {
-        Text(value, color = Gold, fontSize = 20.sp, fontFamily = Serif, fontWeight = FontWeight.Bold, maxLines = 1)
+        Text(value, color = Accent, fontSize = 20.sp, fontFamily = Display, fontWeight = FontWeight.Bold, maxLines = 1)
         Spacer(Modifier.height(2.dp))
         Text(label, color = TextDim, fontSize = 11.sp, lineHeight = 14.sp)
     }
@@ -238,7 +282,7 @@ private fun SessionDialog(kind: String, old: Run?, onClose: () -> Unit) {
     AlertDialog(
         onDismissRequest = onClose,
         containerColor = Surface1,
-        title = { Text("${kindEmoji(kind)} ${kindName(kind)}", color = Gold, fontFamily = Serif) },
+        title = { Text("${kindEmoji(kind)} ${kindName(kind)}", color = Accent, fontFamily = Display) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 if (isPompes) {
@@ -275,7 +319,7 @@ private fun SessionDialog(kind: String, old: Run?, onClose: () -> Unit) {
                     )
                 )
                 onClose()
-            }) { Text("Enregistrer", color = Gold) }
+            }) { Text("Enregistrer", color = Accent) }
         },
         dismissButton = { TextButton(onClick = onClose) { Text("Annuler", color = TextDim) } },
     )

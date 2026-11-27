@@ -22,6 +22,9 @@ sealed class Route {
     data object Relapses : Route()
     data object Pushups : Route()
     data object Ventre : Route()
+    data object Run : Route()
+    data class RunView(val id: String) : Route()
+    data object Habits : Route()
     data class Year(val year: Int) : Route()
 }
 

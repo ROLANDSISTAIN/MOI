@@ -105,7 +105,7 @@ private fun PinPad(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text(title, color = Gold, fontSize = 34.sp, fontFamily = Serif, fontWeight = FontWeight.Bold, letterSpacing = 4.sp)
+        Text(title, color = Accent, fontSize = 34.sp, fontFamily = Display, fontWeight = FontWeight.Bold, letterSpacing = 4.sp)
         Spacer(Modifier.height(10.dp))
         Text(subtitle, color = if (isError) Danger else TextDim, fontSize = 14.sp, textAlign = TextAlign.Center)
         Spacer(Modifier.height(28.dp))
@@ -113,8 +113,8 @@ private fun PinPad(
             repeat(maxOf(4, pin.length)) { i ->
                 Box(
                     Modifier.size(14.dp)
-                        .background(if (i < pin.length) Gold else Black, CircleShape)
-                        .border(1.5.dp, if (isError) Danger else Gold, CircleShape)
+                        .background(if (i < pin.length) Accent else Black, CircleShape)
+                        .border(1.5.dp, if (isError) Danger else Accent, CircleShape)
                 )
             }
         }
@@ -131,7 +131,7 @@ private fun PinPad(
         }
         Spacer(Modifier.height(24.dp))
         Box(Modifier.height(52.dp)) {
-            if (confirmLabel != null) GoldButton(confirmLabel, Modifier.width(220.dp), onClick = onConfirm)
+            if (confirmLabel != null) PrimaryButton(confirmLabel, Modifier.width(220.dp), onClick = onConfirm)
         }
     }
 }
@@ -147,6 +147,6 @@ private fun Key(label: String, onClick: () -> Unit) {
 @Composable
 private fun IconKey(icon: ImageVector, onClick: () -> Unit) {
     Box(Modifier.size(72.dp).clickable(onClick = onClick), contentAlignment = Alignment.Center) {
-        Icon(icon, contentDescription = null, tint = Gold)
+        Icon(icon, contentDescription = null, tint = Accent)
     }
 }

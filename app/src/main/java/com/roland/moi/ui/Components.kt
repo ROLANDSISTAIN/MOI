@@ -1,5 +1,8 @@
 package com.roland.moi.ui
 
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -65,9 +68,12 @@ fun Page(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (onBack != null) {
-                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Retour", tint = Gold) }
+                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "Retour", tint = TextMain) }
             } else Spacer(Modifier.width(16.dp))
-            Text(title, color = Gold, fontSize = 22.sp, fontFamily = Serif, modifier = Modifier.weight(1f), maxLines = 1)
+            Text(
+                title, color = TextMain, fontSize = 22.sp, fontFamily = Display, fontWeight = FontWeight.Bold,
+                letterSpacing = (-0.3).sp, modifier = Modifier.weight(1f), maxLines = 1,
+            )
             actions()
         }
         val m = Modifier.fillMaxWidth().weight(1f).let { if (scroll) it.verticalScroll(rememberScrollState()) else it }
@@ -84,8 +90,8 @@ fun Field(value: String, onChange: (String) -> Unit, label: String, minLines: In
         value = value, onValueChange = onChange, label = { Text(label) },
         modifier = modifier.fillMaxWidth(), minLines = minLines,
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Gold, unfocusedBorderColor = Line, focusedLabelColor = Gold,
-            cursorColor = Gold, focusedTextColor = TextMain, unfocusedTextColor = TextMain,
+            focusedBorderColor = Accent, unfocusedBorderColor = Line, focusedLabelColor = Accent,
+            cursorColor = Accent, focusedTextColor = TextMain, unfocusedTextColor = TextMain,
         ),
     )
 }
@@ -95,10 +101,10 @@ fun Chip(text: String, selected: Boolean, onClick: () -> Unit) {
     Box(
         Modifier
             .clip(RoundedCornerShape(50))
-            .background(if (selected) Gold else Surface2)
+            .background(if (selected) Accent else Surface2)
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 8.dp)
-    ) { Text(text, color = if (selected) Black else TextMain, fontSize = 13.sp) }
+    ) { Text(text, color = if (selected) OnAccent else TextMain, fontSize = 13.sp) }
 }
 
 val MOODS = listOf("😞", "😕", "😐", "🙂", "😄")
@@ -110,8 +116,8 @@ fun MoodPicker(value: Int, onChange: (Int) -> Unit) {
             val v = i + 1
             Box(
                 Modifier.size(50.dp).clip(CircleShape)
-                    .background(if (value == v) Gold.copy(alpha = 0.25f) else Surface2)
-                    .border(1.5.dp, if (value == v) Gold else Line, CircleShape)
+                    .background(if (value == v) Accent.copy(alpha = 0.25f) else Surface2)
+                    .border(1.5.dp, if (value == v) Accent else Line, CircleShape)
                     .clickable { onChange(v) },
                 contentAlignment = Alignment.Center,
             ) { Text(e, fontSize = 24.sp) }
@@ -147,18 +153,72 @@ fun Avatar(name: String, fallback: String, size: Dp = 44.dp) {
 /** Ligne cliquable « emoji · titre · sous-titre ». */
 @Composable
 fun ListRow(emoji: String, title: String, subtitle: String = "", trailing: String = "", onClick: () -> Unit) {
+    RowShell(title, subtitle, trailing, onClick) {
+        Box(Modifier.size(42.dp).clip(RoundedCornerShape(13.dp)).background(Surface2), contentAlignment = Alignment.Center) {
+            Text(emoji, fontSize = 20.sp)
+        }
+    }
+}
+
+/** Ligne cliquable avec une icône (style 2026). */
+@Composable
+fun ListRow(
+    icon: ImageVector, title: String, subtitle: String = "", trailing: String = "",
+    tint: Color = AccentSoft, onClick: () -> Unit,
+) {
+    RowShell(title, subtitle, trailing, onClick) { IconBadge(icon, tint) }
+}
+
+@Composable
+fun IconBadge(icon: ImageVector, tint: Color = AccentSoft, size: Dp = 42.dp) {
+    Box(
+        Modifier.size(size).clip(RoundedCornerShape(13.dp)).background(tint.copy(alpha = 0.12f)),
+        contentAlignment = Alignment.Center,
+    ) { Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(size * 0.5f)) }
+}
+
+@Composable
+private fun RowShell(title: String, subtitle: String, trailing: String, onClick: () -> Unit, lead: @Composable () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Surface1)
-            .border(1.dp, Line, RoundedCornerShape(16.dp)).clickable(onClick = onClick).padding(14.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Surface1)
+            .border(1.dp, Line, RoundedCornerShape(20.dp)).clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(emoji, fontSize = 24.sp)
+        lead()
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
-            Text(title, color = TextMain, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+            Text(title, color = TextMain, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
             if (subtitle.isNotBlank()) Text(subtitle, color = TextDim, fontSize = 12.sp, lineHeight = 16.sp, maxLines = 2)
         }
-        if (trailing.isNotBlank()) Text(trailing, color = Gold, fontSize = 13.sp)
+        if (trailing.isNotBlank()) {
+            Text(trailing, color = AccentSoft, fontSize = 13.sp, fontFamily = Display, fontWeight = FontWeight.Medium)
+            Spacer(Modifier.width(4.dp))
+        }
+        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, tint = TextDim, modifier = Modifier.size(20.dp))
+    }
+}
+
+/** Grand titre d'onglet, avec une action à droite. */
+@Composable
+fun TabHeader(title: String, subtitle: String = "", action: @Composable () -> Unit = {}) {
+    Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f)) {
+            if (subtitle.isNotBlank()) Text(subtitle, color = TextDim, fontSize = 13.sp)
+            Text(title, style = TitleStyle)
+        }
+        action()
+    }
+}
+
+/** Petite statistique : gros chiffre + libellé. */
+@Composable
+fun StatTile(value: String, label: String, modifier: Modifier = Modifier, color: Color = TextMain) {
+    Column(
+        modifier.clip(RoundedCornerShape(18.dp)).background(Surface1).border(1.dp, Line, RoundedCornerShape(18.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+    ) {
+        Text(value, color = color, fontSize = 22.sp, fontFamily = Display, fontWeight = FontWeight.Bold, maxLines = 1)
+        Text(label, color = TextDim, fontSize = 11.sp, lineHeight = 14.sp)
     }
 }
 
@@ -173,7 +233,7 @@ fun DateDialog(initial: Long, onDismiss: () -> Unit, onPick: (Long) -> Unit) {
     val st = rememberDatePickerState(initialSelectedDateMillis = if (initial > 0) initial else System.currentTimeMillis())
     DatePickerDialog(
         onDismissRequest = onDismiss,
-        confirmButton = { TextButton(onClick = { st.selectedDateMillis?.let(onPick); onDismiss() }) { Text("OK", color = Gold) } },
+        confirmButton = { TextButton(onClick = { st.selectedDateMillis?.let(onPick); onDismiss() }) { Text("OK", color = Accent) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Annuler", color = TextDim) } },
     ) { DatePicker(state = st) }
 }
@@ -185,7 +245,7 @@ fun TimeDialog(minutes: Int, onDismiss: () -> Unit, onPick: (Int) -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = Surface1,
-        confirmButton = { TextButton(onClick = { onPick(st.hour * 60 + st.minute); onDismiss() }) { Text("OK", color = Gold) } },
+        confirmButton = { TextButton(onClick = { onPick(st.hour * 60 + st.minute); onDismiss() }) { Text("OK", color = Accent) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Annuler", color = TextDim) } },
         text = { TimePicker(state = st) },
     )
@@ -196,7 +256,7 @@ fun ConfirmDialog(title: String, text: String, confirm: String, onDismiss: () ->
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = Surface1,
-        title = { Text(title, color = Gold) },
+        title = { Text(title, color = Accent) },
         text = { Text(text, color = TextMain) },
         confirmButton = { TextButton(onClick = { onConfirm(); onDismiss() }) { Text(confirm, color = Danger) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Annuler", color = TextDim) } },

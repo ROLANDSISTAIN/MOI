@@ -66,7 +66,7 @@ fun SectionScreen(d: AppData, key: String, nav: Nav) {
     )
     Page(s.title, onBack = { nav.back() }) {
         Text(s.subtitle, color = TextDim, fontSize = 14.sp)
-        GoldButton("+ Ajouter", Modifier.fillMaxWidth()) { nav.go(Route.EntryEdit(s.key)) }
+        PrimaryButton("+ Ajouter", Modifier.fillMaxWidth()) { nav.go(Route.EntryEdit(s.key)) }
         if (items.isEmpty()) EmptyState(s.empty)
 
         val groups: List<Pair<String, List<Entry>>> =
@@ -114,13 +114,13 @@ private fun EntryRow(s: Section, e: Entry, onClick: () -> Unit) {
                 Spacer(Modifier.height(6.dp))
                 LinearProgressIndicator(
                     progress = { e.steps.count { it.done }.toFloat() / e.steps.size },
-                    modifier = Modifier.fillMaxWidth().height(4.dp), color = Gold, trackColor = Surface2, drawStopIndicator = {},
+                    modifier = Modifier.fillMaxWidth().height(4.dp), color = Accent, trackColor = Surface2, drawStopIndicator = {},
                 )
             }
         }
         if (e.done && s.doneLabel != null) {
             Spacer(Modifier.width(8.dp))
-            Text("✓ " + s.doneLabel, color = Gold, fontSize = 12.sp)
+            Text("✓ " + s.doneLabel, color = Accent, fontSize = 12.sp)
         }
     }
 }
@@ -142,13 +142,13 @@ fun EntryViewScreen(d: AppData, id: String, nav: Nav) {
     }
 
     Page(s.title, onBack = { nav.back() }, actions = {
-        if (!sealed) IconButton(onClick = { nav.go(Route.EntryEdit(s.key, e.id)) }) { Icon(Icons.Outlined.Edit, "Modifier", tint = Gold) }
+        if (!sealed) IconButton(onClick = { nav.go(Route.EntryEdit(s.key, e.id)) }) { Icon(Icons.Outlined.Edit, "Modifier", tint = Accent) }
         IconButton(onClick = { askDelete = true }) { Icon(Icons.Outlined.Delete, "Supprimer", tint = TextDim) }
     }) {
         if (sealed) {
             Spacer(Modifier.height(40.dp))
             Text("🔒", fontSize = 56.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
-            Text(e.title, color = Gold, fontSize = 24.sp, fontFamily = Serif, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+            Text(e.title, color = Accent, fontSize = 24.sp, fontFamily = Display, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
             Text(
                 "Scellée le ${Dates.shortDate(e.created)}.\nElle s'ouvrira le ${Dates.longDate(e.dueDate)}.",
                 color = TextDim, fontSize = 15.sp, lineHeight = 22.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
@@ -158,18 +158,18 @@ fun EntryViewScreen(d: AppData, id: String, nav: Nav) {
 
         if (s.hasPhoto && e.photo.isNotBlank()) PhotoBox(e.photo, 260.dp)
         if (e.tag.isNotBlank()) SectionLabel(e.tag)
-        Text(e.title, color = TextMain, fontSize = 26.sp, fontFamily = Serif, lineHeight = 32.sp)
+        Text(e.title, color = TextMain, fontSize = 26.sp, fontFamily = Display, lineHeight = 32.sp)
         val meta = buildList {
             if (s.hasDate && e.date > 0) add(Dates.longDate(e.date))
             if (s == Section.CAPSULES) add("Écrite le ${Dates.shortDate(e.created)}")
             else if (s.hasDue && e.dueDate > 0) add("${s.dueLabel} : ${Dates.shortDate(e.dueDate)}")
             if (e.done && e.doneDate > 0 && s.doneLabel != null && s != Section.CAPSULES) add("${s.doneLabel} le ${Dates.shortDate(e.doneDate)}")
         }
-        if (meta.isNotEmpty()) Text(meta.joinToString(" · "), color = Gold, fontSize = 13.sp)
+        if (meta.isNotEmpty()) Text(meta.joinToString(" · "), color = Accent, fontSize = 13.sp)
         if (e.text.isNotBlank()) {
             Text(
                 e.text, color = TextMain, fontSize = 17.sp, lineHeight = 26.sp,
-                fontFamily = if (s == Section.LETTRES || s == Section.CAPSULES || s == Section.FOI) Serif else null,
+                fontFamily = if (s == Section.LETTRES || s == Section.CAPSULES || s == Section.FOI) Display else null,
                 fontStyle = if (s == Section.FOI && e.tag == "Verset") FontStyle.Italic else null,
             )
         }
@@ -202,7 +202,7 @@ fun EntryViewScreen(d: AppData, id: String, nav: Nav) {
                     Store.saveEntry(e.copy(done = false, doneDate = 0L))
                 }
             } else {
-                GoldButton("Marquer comme « ${s.doneLabel} »", Modifier.fillMaxWidth()) {
+                PrimaryButton("Marquer comme « ${s.doneLabel} »", Modifier.fillMaxWidth()) {
                     Store.saveEntry(e.copy(done = true, doneDate = System.currentTimeMillis()))
                 }
             }
@@ -220,10 +220,10 @@ fun EntryViewScreen(d: AppData, id: String, nav: Nav) {
 fun CheckBox(checked: Boolean) {
     Box(
         Modifier.size(24.dp).clip(RoundedCornerShape(7.dp))
-            .background(if (checked) Gold else Surface2)
-            .border(1.dp, if (checked) Gold else Line, RoundedCornerShape(7.dp)),
+            .background(if (checked) Accent else Surface2)
+            .border(1.dp, if (checked) Accent else Line, RoundedCornerShape(7.dp)),
         contentAlignment = Alignment.Center,
-    ) { if (checked) Text("✓", color = Black, fontSize = 14.sp, fontWeight = FontWeight.Bold) }
+    ) { if (checked) Text("✓", color = OnAccent, fontSize = 14.sp, fontWeight = FontWeight.Bold) }
 }
 
 // ======================= Ajout / modification =======================
@@ -278,7 +278,7 @@ fun EntryEditScreen(d: AppData, key: String, id: String?, nav: Nav) {
                 Box {
                     PhotoBox(photo, 200.dp)
                     IconButton(onClick = { if (photo != old?.photo) Photos.delete(ctx, photo); photo = "" }, modifier = Modifier.align(Alignment.TopEnd)) {
-                        Icon(Icons.Outlined.Close, "Retirer", tint = Gold)
+                        Icon(Icons.Outlined.Close, "Retirer", tint = Accent)
                     }
                 }
             }
@@ -307,7 +307,7 @@ fun EntryEditScreen(d: AppData, key: String, id: String?, nav: Nav) {
                 color = TextDim, fontSize = 12.sp, lineHeight = 17.sp)
         }
 
-        GoldButton("Enregistrer", Modifier.fillMaxWidth(), enabled = title.isNotBlank() || text.isNotBlank()) {
+        PrimaryButton("Enregistrer", Modifier.fillMaxWidth(), enabled = title.isNotBlank() || text.isNotBlank()) {
             if (old != null && old.photo != photo) Photos.delete(ctx, old.photo)
             val e = (old ?: Entry(id = Store.newId(), section = s.key)).copy(
                 title = title.trim().ifBlank { text.trim().take(40) },

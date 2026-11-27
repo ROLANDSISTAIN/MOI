@@ -70,7 +70,7 @@ private fun IntroCard() {
     Card {
         SectionLabel("Le programme")
         Spacer(Modifier.height(8.dp))
-        Text("Perdre du gras, surtout au ventre", color = Gold, fontSize = 22.sp, fontFamily = Serif)
+        Text("Perdre du gras, surtout au ventre", color = Accent, fontSize = 22.sp, fontFamily = Display)
         Spacer(Modifier.height(8.dp))
         Text(
             "On ne peut pas perdre uniquement le ventre : on perd du gras partout, et le ventre diminue avec le reste. " +
@@ -100,7 +100,7 @@ private fun DayPlanCard() {
 @Composable
 private fun Slot(time: String, title: String, detail: String) {
     Row(Modifier.fillMaxWidth()) {
-        Text(time, color = Gold, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.width(84.dp))
+        Text(time, color = Accent, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.width(84.dp))
         Column(Modifier.weight(1f)) {
             Text(title, color = TextMain, fontSize = 15.sp, fontWeight = FontWeight.Medium)
             Text(detail, color = TextDim, fontSize = 13.sp, lineHeight = 18.sp)
@@ -115,7 +115,7 @@ private fun SaladCard() {
     Card {
         SectionLabel("Le plat du matin")
         Spacer(Modifier.height(8.dp))
-        Text("Salade d'œufs, chou et légumes", color = Gold, fontSize = 20.sp, fontFamily = Serif)
+        Text("Salade d'œufs, chou et légumes", color = Accent, fontSize = 20.sp, fontFamily = Display)
         Spacer(Modifier.height(10.dp))
         Text("Pour 1 personne", color = TextDim, fontSize = 12.sp)
         Spacer(Modifier.height(4.dp))
@@ -143,7 +143,7 @@ private fun LunchCard() {
     Card {
         SectionLabel("Le plat de midi")
         Spacer(Modifier.height(8.dp))
-        Text("Riz, pâte ou spaghetti avec sauce", color = Gold, fontSize = 20.sp, fontFamily = Serif)
+        Text("Riz, pâte ou spaghetti avec sauce", color = Accent, fontSize = 20.sp, fontFamily = Display)
         Spacer(Modifier.height(8.dp))
         Text("Le riz, la pâte et les spaghetti ne sont pas interdits : le problème, c'est quand il n'y a que ça.",
             color = TextMain, fontSize = 14.sp, lineHeight = 20.sp)
@@ -215,7 +215,7 @@ private fun SeanceCard(d: AppData, onStart: () -> Unit) {
         SectionLabel("Séance perte du gras du ventre")
         Spacer(Modifier.height(8.dp))
         Text(if (VentreSeance.doneToday(d)) "Séance du jour faite ✅" else "${VentreSeance.minutes} min de fractionné",
-            color = Gold, fontSize = 24.sp, fontFamily = Serif, fontWeight = FontWeight.Bold)
+            color = Accent, fontSize = 24.sp, fontFamily = Display, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(4.dp))
         Text("3 à 4 fois par semaine, pendant au moins 12 semaines.", color = TextDim, fontSize = 13.sp)
         Spacer(Modifier.height(8.dp))
@@ -230,15 +230,15 @@ private fun SeanceCard(d: AppData, onStart: () -> Unit) {
         Spacer(Modifier.height(10.dp))
         Row {
             Text("Séances cette semaine", color = TextDim, fontSize = 13.sp, modifier = Modifier.weight(1f))
-            Text("$done / $per", color = Gold, fontSize = 13.sp)
+            Text("$done / $per", color = Accent, fontSize = 13.sp)
         }
         Spacer(Modifier.height(6.dp))
         LinearProgressIndicator(
             progress = { (done.toFloat() / per).coerceIn(0f, 1f) },
-            modifier = Modifier.fillMaxWidth().height(6.dp), color = Gold, trackColor = Surface2, drawStopIndicator = {},
+            modifier = Modifier.fillMaxWidth().height(6.dp), color = Accent, trackColor = Surface2, drawStopIndicator = {},
         )
         Spacer(Modifier.height(14.dp))
-        GoldButton("▶  Lancer la séance", Modifier.fillMaxWidth(), onClick = onStart)
+        PrimaryButton("▶  Lancer la séance", Modifier.fillMaxWidth(), onClick = onStart)
         Spacer(Modifier.height(6.dp))
         Text("Le chrono te guide, sonne à chaque changement et garde l'écran allumé.", color = TextDim, fontSize = 12.sp)
         Spacer(Modifier.height(6.dp))
@@ -283,42 +283,42 @@ private fun SeanceTimer(onPompes: () -> Unit, onClose: () -> Unit) {
 
     Card {
         if (finished) {
-            Text("Séance terminée 🔥", color = Gold, fontSize = 30.sp, fontFamily = Serif, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+            Text("Séance terminée 🔥", color = Accent, fontSize = 30.sp, fontFamily = Display, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
             Spacer(Modifier.height(8.dp))
             Text("${VentreSeance.minutes} min de fractionné", color = TextMain, fontSize = 15.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
             Spacer(Modifier.height(16.dp))
             if (!saved) {
-                GoldButton("Enregistrer la séance", Modifier.fillMaxWidth()) {
+                PrimaryButton("Enregistrer la séance", Modifier.fillMaxWidth()) {
                     Store.saveRun(Run(id = Store.newId(), date = System.currentTimeMillis(), kind = Run.KIND_VENTRE,
                         minutes = VentreSeance.minutes, feeling = 4, note = "Séance ventre"))
                     saved = true
                 }
             } else {
-                Text("Enregistrée ✅", color = Gold, fontSize = 14.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                Text("Enregistrée ✅", color = Accent, fontSize = 14.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
                 Spacer(Modifier.height(10.dp))
-                GoldButton("💪  Maintenant : mes pompes du jour", Modifier.fillMaxWidth(), onClick = onPompes)
+                PrimaryButton("💪  Maintenant : mes pompes du jour", Modifier.fillMaxWidth(), onClick = onPompes)
             }
             Spacer(Modifier.height(8.dp))
             GhostButton("Fermer", Modifier.fillMaxWidth(), onClick = onClose)
         } else {
             val st = steps[idx]
-            val color = if (st.work) Gold else TextMain
+            val color = if (st.work) Accent else TextMain
             if (st.label.isNotBlank()) {
                 Text(st.label, color = TextDim, fontSize = 13.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
             }
             Spacer(Modifier.height(6.dp))
-            Text(st.title, color = color, fontSize = 28.sp, fontFamily = Serif, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+            Text(st.title, color = color, fontSize = 28.sp, fontFamily = Display, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
             Text(if (left >= 60) "%d:%02d".format(left / 60, left % 60) else "$left", color = color, fontSize = 100.sp,
                 fontWeight = FontWeight.Bold, lineHeight = 104.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
             Text(st.detail, color = TextDim, fontSize = 14.sp, lineHeight = 20.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
             Spacer(Modifier.height(12.dp))
             LinearProgressIndicator(
                 progress = { (idx.toFloat() / steps.size).coerceIn(0f, 1f) },
-                modifier = Modifier.fillMaxWidth().height(6.dp), color = Gold, trackColor = Surface2, drawStopIndicator = {},
+                modifier = Modifier.fillMaxWidth().height(6.dp), color = Accent, trackColor = Surface2, drawStopIndicator = {},
             )
             Spacer(Modifier.height(18.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                GoldButton(if (paused) "▶  Reprendre" else "⏸  Pause", Modifier.weight(1f)) { paused = !paused }
+                PrimaryButton(if (paused) "▶  Reprendre" else "⏸  Pause", Modifier.weight(1f)) { paused = !paused }
                 GhostButton("Arrêter", Modifier.weight(1f), color = TextDim, onClick = onClose)
             }
         }
@@ -358,24 +358,24 @@ private fun MeasuresCard(d: AppData, onAdd: () -> Unit) {
             val days = ((Dates.startOfDay() - Dates.parseDay(last)) / DAY_MS).toInt()
             if (days >= 7) {
                 Spacer(Modifier.height(6.dp))
-                Text("Dernière mesure il y a $days jours : c'est le moment.", color = Gold, fontSize = 13.sp)
+                Text("Dernière mesure il y a $days jours : c'est le moment.", color = Accent, fontSize = 13.sp)
             }
         }
         Spacer(Modifier.height(12.dp))
-        GoldButton("Noter mes mesures", Modifier.fillMaxWidth(), onClick = onAdd)
+        PrimaryButton("Noter mes mesures", Modifier.fillMaxWidth(), onClick = onAdd)
     }
 }
 
 @Composable
 private fun Measure(label: String, now: Double?, start: Double?, unit: String, modifier: Modifier) {
     Column(modifier) {
-        Text(now?.let { fmtNum(it) + " $unit" } ?: "—", color = Gold, fontSize = 22.sp, fontFamily = Serif, fontWeight = FontWeight.Bold)
+        Text(now?.let { fmtNum(it) + " $unit" } ?: "—", color = Accent, fontSize = 22.sp, fontFamily = Display, fontWeight = FontWeight.Bold)
         Text(label, color = TextDim, fontSize = 12.sp)
         if (now != null && start != null && now != start) {
             val diff = now - start
             Text(
                 (if (diff < 0) "▼ " else "▲ ") + fmtNum(Math.abs(Math.round(diff * 10) / 10.0)) + " $unit depuis le début",
-                color = if (diff < 0) Gold else Danger, fontSize = 12.sp,
+                color = if (diff < 0) Accent else Danger, fontSize = 12.sp,
             )
         }
     }
@@ -396,7 +396,7 @@ private fun HabitsCard() {
 @Composable
 private fun Bullet(text: String) {
     Row(Modifier.fillMaxWidth()) {
-        Text("•", color = Gold, fontSize = 14.sp)
+        Text("•", color = Accent, fontSize = 14.sp)
         Spacer(Modifier.width(8.dp))
         Text(text, color = TextMain, fontSize = 14.sp, lineHeight = 20.sp, modifier = Modifier.weight(1f))
     }
@@ -415,7 +415,7 @@ private fun MeasureDialog(d: AppData, onClose: () -> Unit) {
     AlertDialog(
         onDismissRequest = onClose,
         containerColor = Surface1,
-        title = { Text("Mes mesures du jour", color = Gold, fontFamily = Serif) },
+        title = { Text("Mes mesures du jour", color = Accent, fontFamily = Display) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedTextField(weight, { weight = it.filter { c -> c.isDigit() || c == ',' || c == '.' } },
@@ -431,7 +431,7 @@ private fun MeasureDialog(d: AppData, onClose: () -> Unit) {
         confirmButton = {
             TextButton(enabled = w > 0 || t > 0, onClick = {
                 Store.saveBody(BodyLog(today, w, t)); onClose()
-            }) { Text("Enregistrer", color = Gold) }
+            }) { Text("Enregistrer", color = Accent) }
         },
         dismissButton = { TextButton(onClick = onClose) { Text("Annuler", color = TextDim) } },
     )

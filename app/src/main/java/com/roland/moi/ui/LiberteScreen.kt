@@ -53,7 +53,7 @@ import java.util.Calendar
 
 
 @Composable
-fun LiberteScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
+fun LiberteScreen(d: AppData, shieldOn: Boolean, nav: Nav, asTab: Boolean = false) {
     val ctx = LocalContext.current
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(Unit) { while (true) { delay(1000); now = System.currentTimeMillis() } }
@@ -73,16 +73,16 @@ fun LiberteScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
     val weekTemptations = d.temptations.count { it > weekAgo }
     val pledged = Dates.dayKey(now) in d.pledgeDays
 
-    Page("Liberté", onBack = { nav.back() }) {
+    Page("Liberté", onBack = if (asTab) null else ({ nav.back() })) {
 
         // ---- Le compteur ----
         Column(
             Modifier.fillMaxWidth()
-                .background(Brush.linearGradient(listOf(Color(0xFF4A3A12), Color(0xFF241C09))), RoundedCornerShape(22.dp))
-                .border(1.dp, GoldSoft.copy(alpha = 0.5f), RoundedCornerShape(22.dp))
+                .background(HeroBrush, RoundedCornerShape(22.dp))
+                .border(1.dp, GlowBorder, RoundedCornerShape(22.dp))
                 .padding(20.dp),
         ) {
-            Text("Jours de liberté", color = TextMain, fontSize = 22.sp, fontFamily = Serif)
+            Text("Jours de liberté", color = TextMain, fontSize = 22.sp, fontFamily = Display)
             Spacer(Modifier.height(26.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Num("$days", if (days > 1) "Jours" else "Jour")
@@ -94,7 +94,7 @@ fun LiberteScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
             LinearProgressIndicator(
                 progress = { progress },
                 modifier = Modifier.fillMaxWidth().height(6.dp),
-                color = Gold, trackColor = Color.White.copy(alpha = 0.18f), drawStopIndicator = {},
+                color = Accent, trackColor = Color.White.copy(alpha = 0.18f), drawStopIndicator = {},
             )
             Spacer(Modifier.height(10.dp))
             Row(
@@ -102,7 +102,7 @@ fun LiberteScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text("Objectif : ${goalName(goal)}  ✎", color = TextMain, fontSize = 14.sp)
-                Text("${(progress * 100).toInt()} %", color = Gold, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                Text("${(progress * 100).toInt()} %", color = Accent, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
             }
         }
 
@@ -136,7 +136,7 @@ fun LiberteScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
                     color = TextMain, fontSize = 14.sp, lineHeight = 20.sp,
                 )
                 Spacer(Modifier.height(12.dp))
-                GoldButton("Activer le Bouclier", Modifier.fillMaxWidth()) {
+                PrimaryButton("Activer le Bouclier", Modifier.fillMaxWidth()) {
                     ctx.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 }
             }
@@ -164,15 +164,15 @@ fun LiberteScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
                 Text(if (reached) "👑" else "🕒", fontSize = 26.sp)
                 Spacer(Modifier.height(8.dp))
                 if (reached) {
-                    Text("Objectif atteint", color = Gold, fontSize = 26.sp, fontFamily = Serif, fontWeight = FontWeight.Bold)
+                    Text("Objectif atteint", color = Accent, fontSize = 26.sp, fontFamily = Display, fontWeight = FontWeight.Bold)
                     Spacer(Modifier.height(6.dp))
                     Text("Choisis un objectif plus grand.", color = TextDim, fontSize = 14.sp)
                 } else {
                     Text("Tu atteindras ton objectif le", color = TextMain, fontSize = 15.sp)
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        Dates.shortDate(Dates.addDays(d.streakStart, goal)), color = Gold,
-                        fontSize = 28.sp, fontFamily = Serif, fontWeight = FontWeight.Bold,
+                        Dates.shortDate(Dates.addDays(d.streakStart, goal)), color = Accent,
+                        fontSize = 28.sp, fontFamily = Display, fontWeight = FontWeight.Bold,
                     )
                     Spacer(Modifier.height(6.dp))
                     Text("Continue. Un jour à la fois.", color = TextDim, fontSize = 14.sp)
@@ -212,7 +212,7 @@ fun LiberteScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
     if (showPledge) AlertDialog(
         onDismissRequest = { showPledge = false },
         containerColor = Surface1,
-        title = { Text(if (pledged) "Engagement pris ✓" else "Mon engagement du jour", color = Gold, fontFamily = Serif) },
+        title = { Text(if (pledged) "Engagement pris ✓" else "Mon engagement du jour", color = Accent, fontFamily = Display) },
         text = {
             Text(
                 if (pledged) "Tu t'es engagé pour aujourd'hui. Tiens parole : un jour à la fois."
@@ -222,7 +222,7 @@ fun LiberteScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
         },
         confirmButton = {
             TextButton(onClick = { if (!pledged) Store.pledgeToday(); showPledge = false }) {
-                Text(if (pledged) "OK" else "Je m'engage", color = Gold)
+                Text(if (pledged) "OK" else "Je m'engage", color = Accent)
             }
         },
         dismissButton = { if (!pledged) TextButton(onClick = { showPledge = false }) { Text("Plus tard", color = TextDim) } },
@@ -231,16 +231,16 @@ fun LiberteScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
     if (showGoal) AlertDialog(
         onDismissRequest = { showGoal = false },
         containerColor = Surface1,
-        title = { Text("Mon objectif", color = Gold, fontFamily = Serif) },
+        title = { Text("Mon objectif", color = Accent, fontFamily = Display) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 GOALS.forEach { g ->
                     Row(
                         Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
-                            .background(if (g == goal) Gold else Surface2)
+                            .background(if (g == goal) Accent else Surface2)
                             .clickable { Store.update { it.copy(freedomGoal = g) }; showGoal = false }
                             .padding(horizontal = 16.dp, vertical = 12.dp),
-                    ) { Text(goalName(g), color = if (g == goal) Black else TextMain, fontSize = 15.sp) }
+                    ) { Text(goalName(g), color = if (g == goal) OnAccent else TextMain, fontSize = 15.sp) }
                 }
             }
         },
@@ -250,14 +250,14 @@ fun LiberteScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
     if (showReminder) AlertDialog(
         onDismissRequest = { showReminder = false },
         containerColor = Surface1,
-        title = { Text("Rappel d'engagement", color = Gold, fontFamily = Serif) },
+        title = { Text("Rappel d'engagement", color = Accent, fontFamily = Display) },
         text = {
             Text(
                 "Chaque jour à ${Dates.time(d.pledgeTime)}, si tu ne t'es pas encore engagé, MOI te le rappelle.",
                 color = TextMain, fontSize = 15.sp, lineHeight = 22.sp,
             )
         },
-        confirmButton = { TextButton(onClick = { showReminder = false; pickTime = true }) { Text("Changer l'heure", color = Gold) } },
+        confirmButton = { TextButton(onClick = { showReminder = false; pickTime = true }) { Text("Changer l'heure", color = Accent) } },
         dismissButton = {
             TextButton(onClick = {
                 Store.update { it.copy(pledgeOn = false) }; Reminders.scheduleAll(ctx); showReminder = false
@@ -284,7 +284,7 @@ private fun goalName(days: Int) = when (days) {
 @Composable
 private fun Num(value: String, label: String) {
     Column {
-        Text(value, color = TextMain, fontSize = 40.sp, fontFamily = Serif, fontWeight = FontWeight.Bold, lineHeight = 44.sp)
+        Text(value, color = TextMain, fontSize = 40.sp, fontFamily = Display, fontWeight = FontWeight.Bold, lineHeight = 44.sp)
         Text(label, color = TextMain.copy(alpha = 0.75f), fontSize = 12.sp)
     }
 }
@@ -293,13 +293,13 @@ private fun Num(value: String, label: String) {
 private fun ActionTile(icon: String, label: String, modifier: Modifier, highlight: Boolean = false, onClick: () -> Unit) {
     Row(
         modifier.clip(RoundedCornerShape(16.dp)).background(Surface1)
-            .border(1.dp, if (highlight) Gold else Line, RoundedCornerShape(16.dp))
+            .border(1.dp, if (highlight) Accent else Line, RoundedCornerShape(16.dp))
             .clickable(onClick = onClick).padding(vertical = 14.dp, horizontal = 6.dp),
         horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(icon, color = if (highlight) Gold else TextMain, fontSize = 15.sp)
+        Text(icon, color = if (highlight) Accent else TextMain, fontSize = 15.sp)
         Spacer(Modifier.width(6.dp))
-        Text(label, color = if (highlight) Gold else TextMain, fontSize = 13.sp, maxLines = 1)
+        Text(label, color = if (highlight) Accent else TextMain, fontSize = 13.sp, maxLines = 1)
     }
 }
 
@@ -315,7 +315,7 @@ fun RelapsesScreen(d: AppData, nav: Nav) {
                     Text(formatDate(r.time) + " · après " + formatStreak(r.streakMs), color = TextDim, fontSize = 12.sp)
                     if (r.trigger.isNotBlank()) {
                         Spacer(Modifier.height(4.dp))
-                        Text("Déclencheur : ${r.trigger}", color = Gold, fontSize = 13.sp)
+                        Text("Déclencheur : ${r.trigger}", color = Accent, fontSize = 13.sp)
                     }
                     if (r.what.isNotBlank()) {
                         Spacer(Modifier.height(4.dp))
@@ -332,7 +332,7 @@ private fun Stat(label: String, value: String, modifier: Modifier) {
     Column(
         modifier.background(Surface1, RoundedCornerShape(16.dp)).border(1.dp, Line, RoundedCornerShape(16.dp)).padding(14.dp),
     ) {
-        Text(value, color = Gold, fontSize = 20.sp, fontFamily = Serif, fontWeight = FontWeight.Bold, maxLines = 1)
+        Text(value, color = Accent, fontSize = 20.sp, fontFamily = Display, fontWeight = FontWeight.Bold, maxLines = 1)
         Spacer(Modifier.height(4.dp))
         Text(label, color = TextDim, fontSize = 11.sp, lineHeight = 14.sp)
     }
@@ -346,10 +346,10 @@ private fun Milestones(days: Int) {
             val done = days >= m
             Box(
                 Modifier
-                    .background(if (done) Gold else Surface2, RoundedCornerShape(50))
+                    .background(if (done) Accent else Surface2, RoundedCornerShape(50))
                     .padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
-                Text((if (done) "✓ " else "") + milestoneName(m), color = if (done) Black else TextDim, fontSize = 12.sp)
+                Text((if (done) "✓ " else "") + milestoneName(m), color = if (done) OnAccent else TextDim, fontSize = 12.sp)
             }
         }
     }
@@ -373,7 +373,7 @@ private fun WeakMoments(times: List<Long>) {
             Box(Modifier.weight(1f).height(10.dp).background(Surface2, RoundedCornerShape(5.dp))) {
                 Box(
                     Modifier.fillMaxWidth(buckets[i].toFloat() / max).fillMaxHeight()
-                        .background(Gold, RoundedCornerShape(5.dp))
+                        .background(Accent, RoundedCornerShape(5.dp))
                 )
             }
             Text("${buckets[i]}", color = TextDim, fontSize = 12.sp, modifier = Modifier.width(36.dp).padding(start = 8.dp))
@@ -391,7 +391,7 @@ private fun RelapseDialog(onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = Surface1,
-        title = { Text("Ce n'est pas la fin.", color = Gold, fontFamily = Serif) },
+        title = { Text("Ce n'est pas la fin.", color = Accent, fontFamily = Display) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 Text(
@@ -408,7 +408,7 @@ private fun RelapseDialog(onDismiss: () -> Unit) {
                             onClick = { trigger = if (trigger == t) "" else t },
                             label = { Text(t, fontSize = 12.sp) },
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Gold, selectedLabelColor = Black,
+                                selectedContainerColor = Accent, selectedLabelColor = OnAccent,
                                 labelColor = TextMain,
                             ),
                         )
@@ -443,7 +443,7 @@ private fun RelapseDialog(onDismiss: () -> Unit) {
                 }
                 onDismiss()
             }) {
-                Text("Recommencer à zéro", color = Gold)
+                Text("Recommencer à zéro", color = Accent)
             }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Annuler", color = TextDim) } },

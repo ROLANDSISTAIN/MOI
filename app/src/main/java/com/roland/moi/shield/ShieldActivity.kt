@@ -34,10 +34,10 @@ import com.roland.moi.data.Quotes
 import com.roland.moi.data.Store
 import com.roland.moi.ui.Black
 import com.roland.moi.ui.GhostButton
-import com.roland.moi.ui.Gold
-import com.roland.moi.ui.GoldButton
+import com.roland.moi.ui.Accent
+import com.roland.moi.ui.PrimaryButton
 import com.roland.moi.ui.MoiTheme
-import com.roland.moi.ui.Serif
+import com.roland.moi.ui.Display
 import com.roland.moi.ui.TextDim
 import com.roland.moi.ui.TextMain
 import com.roland.moi.ui.formatStreak
@@ -87,26 +87,26 @@ private fun ShieldScreen(onDone: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text("STOP.", color = Gold, fontSize = 46.sp, fontFamily = Serif, fontWeight = FontWeight.Bold, letterSpacing = 6.sp)
+        Text("STOP.", color = Accent, fontSize = 46.sp, fontFamily = Display, fontWeight = FontWeight.Bold, letterSpacing = 6.sp)
         Spacer(Modifier.height(10.dp))
         Text("Tu es à $streak de liberté.", color = TextDim, fontSize = 15.sp, textAlign = TextAlign.Center)
         Spacer(Modifier.height(36.dp))
-        Text(d.shieldMessage, color = TextMain, fontSize = 22.sp, lineHeight = 31.sp, fontFamily = Serif, textAlign = TextAlign.Center)
+        Text(d.shieldMessage, color = TextMain, fontSize = 22.sp, lineHeight = 31.sp, fontFamily = Display, textAlign = TextAlign.Center)
         if (d.shieldVerse.isNotBlank()) {
             Spacer(Modifier.height(24.dp))
-            Text(d.shieldVerse, color = Gold, fontSize = 16.sp, lineHeight = 23.sp, fontStyle = FontStyle.Italic, textAlign = TextAlign.Center)
+            Text(d.shieldVerse, color = Accent, fontSize = 16.sp, lineHeight = 23.sp, fontStyle = FontStyle.Italic, textAlign = TextAlign.Center)
         }
         val letter = remember { Quotes.forShield(d) }
         if (letter != null) {
             Spacer(Modifier.height(28.dp))
-            Text(letter.source.uppercase(), color = Gold, fontSize = 11.sp, letterSpacing = 2.sp)
+            Text(letter.source.uppercase(), color = Accent, fontSize = 11.sp, letterSpacing = 2.sp)
             Spacer(Modifier.height(8.dp))
-            Text(letter.text, color = TextMain, fontSize = 16.sp, lineHeight = 23.sp, fontFamily = Serif, textAlign = TextAlign.Center)
+            Text(letter.text, color = TextMain, fontSize = 16.sp, lineHeight = 23.sp, fontFamily = Display, textAlign = TextAlign.Center)
         }
         Spacer(Modifier.height(44.dp))
         Text("Respire. Lève-toi. Bois un verre d'eau. Change de pièce.", color = TextDim, fontSize = 13.sp, textAlign = TextAlign.Center)
         Spacer(Modifier.height(28.dp))
-        GoldButton(
+        PrimaryButton(
             text = if (left > 0) "J'ai résisté ($left s)" else "J'ai résisté 💪",
             enabled = left <= 0,
             modifier = Modifier.fillMaxWidth(),

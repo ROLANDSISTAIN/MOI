@@ -45,7 +45,7 @@ fun ProtectionScreen(d: AppData, nav: Nav) {
             if (!shieldOn) {
                 Text("⚠️ Active d'abord le Bouclier : c'est lui qui surveille les tentatives de désinstallation.", color = Danger, fontSize = 13.sp)
             }
-            GoldButton("Activer la protection", Modifier.fillMaxWidth(), enabled = shieldOn) {
+            PrimaryButton("Activer la protection", Modifier.fillMaxWidth(), enabled = shieldOn) {
                 // 2 minutes de grâce pour autoriser MOI comme administrateur sans que le Bouclier ne bloque l'écran
                 Store.update { it.copy(protectOn = true, unlockUntil = System.currentTimeMillis() + 120_000, unlockRequestedAt = 0L) }
                 if (!Protection.isAdmin(ctx)) ctx.startActivity(Protection.adminIntent(ctx))
@@ -78,7 +78,7 @@ fun ProtectionScreen(d: AppData, nav: Nav) {
                 Store.update { it.copy(protectOn = false, unlockUntil = 0L) }
                 Toast.makeText(ctx, "Protection retirée", Toast.LENGTH_SHORT).show()
             }
-            GoldButton("Réactiver tout de suite", Modifier.fillMaxWidth()) { Store.update { it.copy(unlockUntil = 0L) } }
+            PrimaryButton("Réactiver tout de suite", Modifier.fillMaxWidth()) { Store.update { it.copy(unlockUntil = 0L) } }
             return@Page
         }
 
@@ -94,11 +94,11 @@ fun ProtectionScreen(d: AppData, nav: Nav) {
                 val left = (d.unlockRequestedAt + Protection.WAIT_MS - now).coerceAtLeast(0)
                 if (left > 0) {
                     val h = left / 3_600_000; val m = (left / 60_000) % 60
-                    Text("Encore ${h} h ${m} min.", color = Gold, fontSize = 18.sp)
+                    Text("Encore ${h} h ${m} min.", color = Accent, fontSize = 18.sp)
                     Spacer(Modifier.height(10.dp))
                     GhostButton("Annuler la demande", Modifier.fillMaxWidth(), color = TextDim) { Protection.cancelRequest() }
                 } else {
-                    GoldButton("Déverrouiller pour 15 minutes", Modifier.fillMaxWidth()) { Protection.openWindow() }
+                    PrimaryButton("Déverrouiller pour 15 minutes", Modifier.fillMaxWidth()) { Protection.openWindow() }
                 }
             }
         }
@@ -109,11 +109,11 @@ fun ProtectionScreen(d: AppData, nav: Nav) {
             Spacer(Modifier.height(8.dp))
             Text("Recopie exactement :", color = TextDim, fontSize = 13.sp)
             Spacer(Modifier.height(6.dp))
-            Text("« ${Protection.PHRASE} »", color = Gold, fontSize = 14.sp, lineHeight = 20.sp, fontStyle = FontStyle.Italic)
+            Text("« ${Protection.PHRASE} »", color = Accent, fontSize = 14.sp, lineHeight = 20.sp, fontStyle = FontStyle.Italic)
             Spacer(Modifier.height(10.dp))
             Field(phrase, { phrase = it }, "Recopie la phrase", minLines = 3)
             Spacer(Modifier.height(10.dp))
-            GoldButton("Déverrouiller pour 15 minutes", Modifier.fillMaxWidth(), enabled = Protection.phraseMatches(phrase)) {
+            PrimaryButton("Déverrouiller pour 15 minutes", Modifier.fillMaxWidth(), enabled = Protection.phraseMatches(phrase)) {
                 Protection.openWindow(); phrase = ""
             }
         }

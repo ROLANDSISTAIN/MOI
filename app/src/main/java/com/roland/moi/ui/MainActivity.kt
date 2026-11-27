@@ -20,6 +20,7 @@ import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.DirectionsRun
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -32,6 +33,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
@@ -56,7 +58,22 @@ class MainActivity : FragmentActivity() {
         // Rien de MOI n'apparaît dans les captures ni dans les apps récentes
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         hasPin = PinManager.hasPin(this)
+        openRunIfAsked(intent)
         setContent { MoiTheme { Root() } }
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        openRunIfAsked(intent)
+    }
+
+    /** La notification de course ramène directement à l'écran de la course. */
+    private fun openRunIfAsked(i: android.content.Intent?) {
+        if (i?.getBooleanExtra(OPEN_RUN, false) == true && nav.current != Route.Run) nav.go(Route.Run)
+    }
+
+    companion object {
+        const val OPEN_RUN = "open_run"
     }
 
     override fun onStart() {
@@ -125,6 +142,9 @@ class MainActivity : FragmentActivity() {
         when (val r = nav.current) {
             null -> Tabs(d)
             Route.Liberte -> LiberteScreen(d, shieldOn, nav)
+            Route.Run -> RunScreen(d, nav)
+            is Route.RunView -> RunViewScreen(d, r.id, nav)
+            Route.Habits -> HabitsScreen(d, nav)
             Route.ShieldSettings -> ShieldSettingsScreen(d, shieldOn, nav)
             Route.Settings -> SettingsScreen(d, nav, onChangePin = { changingPin = true })
             Route.Protection -> ProtectionScreen(d, nav)
@@ -153,17 +173,18 @@ class MainActivity : FragmentActivity() {
             Box(Modifier.weight(1f)) {
                 when (tab) {
                     0 -> HomeScreen(d, shieldOn, nav, onTab = { tab = it })
-                    1 -> MaVieScreen(d, nav)
-                    2 -> HabitsScreen(d, nav)
-                    else -> SportScreen(d, nav)
+                    1 -> LiberteScreen(d, shieldOn, nav, asTab = true)
+                    2 -> SportScreen(d, nav)
+                    else -> MaVieScreen(d, nav)
                 }
             }
-            NavigationBar(containerColor = Surface1) {
+            androidx.compose.material3.HorizontalDivider(color = Line, thickness = 1.dp)
+            NavigationBar(containerColor = Black, tonalElevation = 0.dp) {
                 val items = listOf(
-                    Triple("Accueil", Icons.Outlined.Home, 0),
-                    Triple("Ma vie", Icons.Outlined.AutoStories, 1),
-                    Triple("Habitudes", Icons.Outlined.CheckCircle, 2),
-                    Triple("Sport", Icons.Outlined.DirectionsRun, 3),
+                    Triple("Aujourd'hui", Icons.Outlined.Home, 0),
+                    Triple("Liberté", Icons.Outlined.Shield, 1),
+                    Triple("Sport", Icons.Outlined.DirectionsRun, 2),
+                    Triple("Ma vie", Icons.Outlined.AutoStories, 3),
                 )
                 items.forEach { (label, icon, i) ->
                     NavigationBarItem(
@@ -172,8 +193,8 @@ class MainActivity : FragmentActivity() {
                         icon = { Icon(icon, contentDescription = label) },
                         label = { Text(label, fontSize = 11.sp) },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Black, indicatorColor = Gold,
-                            selectedTextColor = Gold, unselectedIconColor = TextDim, unselectedTextColor = TextDim,
+                            selectedIconColor = OnAccent, indicatorColor = Accent,
+                            selectedTextColor = TextMain, unselectedIconColor = TextDim, unselectedTextColor = TextDim,
                         ),
                     )
                 }

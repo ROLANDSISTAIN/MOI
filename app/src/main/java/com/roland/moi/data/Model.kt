@@ -47,6 +47,8 @@ data class Run(
     val kind: String = KIND_CORDE,
     val count: Int = 0,   // nombre de pompes (ou de sauts)
     val sets: Int = 0,    // nombre de séries
+    val seconds: Int = 0, // durée exacte (course GPS)
+    val track: String = "", // tracé GPS « lat,lon;lat,lon;… » (course GPS)
 ) {
     companion object {
         const val KIND_CORDE = "corde"
@@ -160,6 +162,7 @@ data class AppData(
         put("runs", arr(runs) { r ->
             JSONObject().put("id", r.id).put("date", r.date).put("km", r.km).put("minutes", r.minutes)
                 .put("feeling", r.feeling).put("note", r.note).put("kind", r.kind).put("count", r.count).put("sets", r.sets)
+                .put("seconds", r.seconds).put("track", r.track)
         })
         put("days", arr(days) { d ->
             JSONObject().put("day", d.day).put("mood", d.mood).put("gratitude", d.gratitude)
@@ -249,7 +252,7 @@ data class AppData(
                 runs = list(o, "runs") { r ->
                     Run(r.getString("id"), r.optLong("date"), r.optDouble("km", 0.0), r.optInt("minutes"),
                         r.optInt("feeling"), r.optString("note"), r.optString("kind", Run.KIND_COURSE),
-                        r.optInt("count"), r.optInt("sets"))
+                        r.optInt("count"), r.optInt("sets"), r.optInt("seconds"), r.optString("track"))
                 },
                 days = list(o, "days") { x ->
                     DayLog(x.getString("day"), x.optInt("mood"), x.optString("gratitude"), x.optString("victory"), x.optString("text"))

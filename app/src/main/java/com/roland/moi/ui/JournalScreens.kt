@@ -41,7 +41,7 @@ fun JournalScreen(d: AppData, day: String, nav: Nav) {
         Field(gratitude, { gratitude = it }, "Aujourd'hui, je suis reconnaissant pour…", minLines = 2)
         Field(victory, { victory = it }, "Ma victoire du jour", minLines = 2)
         Field(text, { text = it }, "Ce que j'ai vécu, ce que je ressens", minLines = 6)
-        GoldButton("Enregistrer", Modifier.fillMaxWidth()) {
+        PrimaryButton("Enregistrer", Modifier.fillMaxWidth()) {
             Store.saveDay(DayLog(day, mood, gratitude.trim(), victory.trim(), text.trim()))
             nav.back()
         }
@@ -52,7 +52,7 @@ fun JournalScreen(d: AppData, day: String, nav: Nav) {
 fun JournalListScreen(d: AppData, nav: Nav) {
     val today = Dates.dayKey()
     Page("Mon journal", onBack = { nav.back() }) {
-        GoldButton(if (d.days.any { it.day == today }) "Modifier la page d'aujourd'hui" else "+ Écrire la page d'aujourd'hui", Modifier.fillMaxWidth()) {
+        PrimaryButton(if (d.days.any { it.day == today }) "Modifier la page d'aujourd'hui" else "+ Écrire la page d'aujourd'hui", Modifier.fillMaxWidth()) {
             nav.go(Route.Journal(today))
         }
         if (d.days.isEmpty()) EmptyState("Chaque soir, quelques lignes : ton humeur, une gratitude, ta victoire du jour.")
@@ -126,7 +126,7 @@ private fun StatLine(emoji: String, label: String, value: String) {
         Text(emoji, fontSize = 16.sp)
         Spacer(Modifier.width(10.dp))
         Text(label, color = TextMain, fontSize = 14.sp, modifier = Modifier.weight(1f))
-        Text(value, color = Gold, fontSize = 14.sp)
+        Text(value, color = Accent, fontSize = 14.sp)
     }
 }
 
@@ -153,7 +153,7 @@ fun ReviewScreen(d: AppData, week: String, nav: Nav) {
         MoodPicker(mood) { mood = it }
         Field(wins, { wins = it }, "Mes victoires de la semaine", minLines = 3)
         Field(improve, { improve = it }, "Ce que je veux améliorer la semaine prochaine", minLines = 3)
-        GoldButton("Enregistrer mon bilan", Modifier.fillMaxWidth()) {
+        PrimaryButton("Enregistrer mon bilan", Modifier.fillMaxWidth()) {
             Store.saveReview(WeekReview(week, mood, wins.trim(), improve.trim(), old?.created ?: System.currentTimeMillis()))
             nav.back()
         }
@@ -164,7 +164,7 @@ fun ReviewScreen(d: AppData, week: String, nav: Nav) {
 fun ReviewsScreen(d: AppData, nav: Nav) {
     val now = System.currentTimeMillis()
     Page("Mes bilans", onBack = { nav.back() }) {
-        GoldButton("Faire le bilan de cette semaine", Modifier.fillMaxWidth()) { nav.go(Route.Review(Dates.weekKey(now))) }
+        PrimaryButton("Faire le bilan de cette semaine", Modifier.fillMaxWidth()) { nav.go(Route.Review(Dates.weekKey(now))) }
 
         SectionLabel("Bilans mensuels (automatiques)")
         val firstUse = listOfNotNull(
