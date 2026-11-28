@@ -200,25 +200,6 @@ fun SportScreen(d: AppData, nav: Nav) {
             }
         }
 
-        if (d.runs.isNotEmpty()) {
-            SectionLabel("Historique")
-            d.runs.sortedByDescending { it.date }.take(60).forEach { r ->
-                Row(
-                    Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Surface1)
-                        .border(1.dp, Line, RoundedCornerShape(14.dp))
-                        .clickable { if (r.kind == Run.KIND_COURSE) nav.go(Route.RunView(r.id)) else edit = r }.padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    IconBadge(kindIcon(r.kind), if (r.kind == Run.KIND_VENTRE) Neon else AccentSoft, 38.dp)
-                    Spacer(Modifier.width(12.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(Dates.longDate(r.date), color = TextMain, fontSize = 14.sp)
-                        Text(sessionSummary(r) + if (r.note.isNotBlank()) " · ${r.note}" else "", color = TextDim, fontSize = 12.sp, maxLines = 2)
-                    }
-                    if (r.feeling > 0) Text(MOODS[r.feeling - 1], fontSize = 20.sp)
-                }
-            }
-        }
         Spacer(Modifier.height(12.dp))
     }
 
