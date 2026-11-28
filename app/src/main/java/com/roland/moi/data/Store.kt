@@ -47,10 +47,6 @@ object Store {
             // Nouveau programme pompes (départ à 10 d'affilée) : on repart du début
             d = d.copy(pushupStart = 0L, pushupMax = 0)
         }
-        if (d.schema < 7) {
-            // Courses GPS sans aucune distance (signal jamais trouvé) : on les retire
-            d = d.copy(runs = d.runs.filterNot { it.kind == Run.KIND_COURSE && it.seconds > 0 && it.km < 0.01 })
-        }
         return d.copy(schema = AppData.SCHEMA)
     }
 
