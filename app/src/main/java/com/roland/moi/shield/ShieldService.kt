@@ -42,7 +42,8 @@ class ShieldService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         running = true
-        refreshBrowsers(System.currentTimeMillis())
+        runCatching { refreshBrowsers(System.currentTimeMillis()) }
+        runCatching { ShieldGuard.ensure(this) }
     }
 
     override fun onDestroy() {
@@ -52,7 +53,18 @@ class ShieldService : AccessibilityService() {
 
     override fun onInterrupt() {}
 
+    /**
+     * Une erreur dans le traitement d'un événement ne doit JAMAIS faire planter le service :
+     * Android désactive un service d'accessibilité qui plante.
+     */
     override fun onAccessibilityEvent(e: AccessibilityEvent?) {
+        try {
+            handle(e)
+        } catch (_: Throwable) {
+        }
+    }
+
+    private fun handle(e: AccessibilityEvent?) {
         e ?: return
         val pkg = e.packageName?.toString() ?: return
         if (pkg == packageName) return

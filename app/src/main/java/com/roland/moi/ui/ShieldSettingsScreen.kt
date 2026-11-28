@@ -1,5 +1,6 @@
 package com.roland.moi.ui
 
+import androidx.compose.foundation.background
 import android.content.Intent
 import android.provider.Settings
 import android.widget.Toast
@@ -57,6 +58,30 @@ fun ShieldSettingsScreen(d: AppData, shieldOn: Boolean, nav: Nav) {
                 Spacer(Modifier.height(10.dp))
                 PrimaryButton("Ouvrir Accessibilité", Modifier.fillMaxWidth()) {
                     ctx.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                }
+            }
+        }
+
+        Card {
+            val auto = com.roland.moi.shield.ShieldGuard.canSelfHeal(ctx)
+            SectionLabel("Réactivation automatique")
+            Spacer(Modifier.height(8.dp))
+            if (auto) {
+                val n = com.roland.moi.shield.ShieldGuard.heals(ctx)
+                Text("Active ✓  Si le téléphone coupe le Bouclier, MOI le rallume tout seul (vérification toutes les 15 min et au démarrage).",
+                    color = Success, fontSize = 14.sp, lineHeight = 20.sp)
+                if (n > 0) Text("Déjà rallumé $n fois.", color = TextDim, fontSize = 12.sp)
+            } else {
+                Text("Pas encore active. MOI t'alerte quand le Bouclier est coupé, mais ne peut pas le rallumer seul.",
+                    color = TextMain, fontSize = 14.sp, lineHeight = 20.sp)
+                Spacer(Modifier.height(8.dp))
+                Text("À faire une seule fois depuis un PC, téléphone branché en USB (débogage USB activé) :",
+                    color = TextDim, fontSize = 13.sp, lineHeight = 18.sp)
+                Spacer(Modifier.height(6.dp))
+                androidx.compose.foundation.text.selection.SelectionContainer {
+                    Text("adb shell pm grant com.roland.moi android.permission.WRITE_SECURE_SETTINGS",
+                        color = AccentSoft, fontSize = 12.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                        modifier = Modifier.fillMaxWidth().background(Surface2, androidx.compose.foundation.shape.RoundedCornerShape(10.dp)).padding(10.dp))
                 }
             }
         }

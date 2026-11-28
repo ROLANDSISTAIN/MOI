@@ -84,6 +84,8 @@ class MainActivity : FragmentActivity() {
 
     override fun onResume() {
         super.onResume()
+        runCatching { com.roland.moi.shield.ShieldGuard.ensure(this) }
+        runCatching { com.roland.moi.shield.ShieldGuard.schedule(this) }
         shieldOn = ShieldService.isEnabled(this)
     }
 

@@ -36,6 +36,7 @@ object Reminders {
         schedule(c, QUOTE, d.quoteTime, d.quoteOn)
         schedule(c, SPORT, d.sportTime, d.sportOn)
         schedule(c, PLEDGE, d.pledgeTime, d.pledgeOn)
+        com.roland.moi.shield.ShieldGuard.schedule(c)
     }
 
     private fun pending(c: Context, kind: String): PendingIntent =
@@ -115,7 +116,11 @@ object Reminders {
 class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(c: Context, intent: Intent) {
         when (intent.action) {
-            Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED -> Reminders.scheduleAll(c)
+            Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED -> {
+                runCatching { com.roland.moi.shield.ShieldGuard.ensure(c) }
+                Reminders.scheduleAll(c)
+            }
+            com.roland.moi.shield.ShieldGuard.ACTION -> runCatching { com.roland.moi.shield.ShieldGuard.ensure(c) }
             else -> Reminders.fire(c, intent.getStringExtra("kind") ?: return)
         }
     }
