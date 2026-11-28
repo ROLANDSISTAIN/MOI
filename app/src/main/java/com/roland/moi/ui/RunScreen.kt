@@ -131,6 +131,8 @@ private fun RunStart(d: AppData, ctx: Context) {
         Spacer(Modifier.height(10.dp))
     }
 
+    if (hasPerm && gpsOn) GpsProbe()
+
     if (!hasPerm) InfoRow(Icons.Outlined.GpsNotFixed, "Autorise la localisation", "Choisis « Pendant l'utilisation de l'appli ». Appuie sur Démarrer pour la demander.", Neon)
     else if (!gpsOn) InfoRow(Icons.Outlined.GpsNotFixed, "Active la localisation", "Le GPS du téléphone est coupé. Appuie sur Démarrer pour ouvrir le réglage.", Neon)
 
@@ -163,8 +165,14 @@ private fun RunLive(s: RunState, ctx: Context) {
     val sec = s.elapsedMs(now) / 1000
     val paused = s.status == RunState.Status.PAUSED
 
-    if (!s.gpsReady) {
-        InfoRow(Icons.Outlined.GpsNotFixed, "Recherche du signal GPS…", "Reste à découvert quelques instants. La distance démarre dès que le signal est bon.", AccentSoft)
+    if (s.error.isNotBlank()) {
+        InfoRow(Icons.Outlined.GpsNotFixed, "Problème de suivi", s.error, Neon)
+    } else if (!s.gpsReady) {
+        val details = buildString {
+            append("${s.satsSeen} satellites vus, ${s.satsUsed} utilisés")
+            if (s.lastFixAt > 0 && s.accuracy < 900) append(" · précision ±${s.accuracy.toInt()} m")
+        }
+        InfoRow(Icons.Outlined.GpsNotFixed, "Recherche du signal GPS…", "$details. Reste à découvert, loin des murs. La distance démarre dès que la précision passe sous ${RunTracker.MAX_ACCURACY_M.toInt()} m.", AccentSoft)
     }
 
     HeroCard {
@@ -391,3 +399,47 @@ private fun hasLocation(ctx: Context) =
 
 private fun gpsEnabled(ctx: Context) =
     (ctx.getSystemService(Context.LOCATION_SERVICE) as LocationManager).isProviderEnabled(LocationManager.GPS_PROVIDER)
+
+/**
+ * Indicateur de signal avant le départ : écoute le GPS pendant que l'écran est ouvert
+ * pour que le téléphone trouve sa position avant même d'appuyer sur Démarrer.
+ */
+@android.annotation.SuppressLint("MissingPermission")
+@Composable
+private fun GpsProbe() {
+    val ctx = LocalContext.current
+    var acc by remember { mutableStateOf(-1f) }
+    var used by remember { mutableIntStateOf(0) }
+    var seen by remember { mutableIntStateOf(0) }
+    DisposableEffect(Unit) {
+        val lm = ctx.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val listener = android.location.LocationListener { l -> acc = if (l.hasAccuracy()) l.accuracy else 999f }
+        val cb = object : android.location.GnssStatus.Callback() {
+            override fun onSatelliteStatusChanged(status: android.location.GnssStatus) {
+                var u = 0
+                for (i in 0 until status.satelliteCount) if (status.usedInFix(i)) u++
+                used = u; seen = status.satelliteCount
+            }
+        }
+        runCatching { lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 0f, listener, android.os.Looper.getMainLooper()) }
+        runCatching { lm.registerGnssStatusCallback(cb, android.os.Handler(android.os.Looper.getMainLooper())) }
+        onDispose {
+            runCatching { lm.removeUpdates(listener) }
+            runCatching { lm.unregisterGnssStatusCallback(cb) }
+        }
+    }
+    val good = acc in 0f..RunTracker.MAX_ACCURACY_M
+    val (title, color) = when {
+        good && acc <= 15f -> "Signal GPS excellent" to Success
+        good -> "Signal GPS correct" to Success
+        acc > 0 -> "Signal GPS faible" to AccentSoft
+        else -> "Recherche du signal GPS…" to AccentSoft
+    }
+    val text = buildString {
+        append("$seen satellites vus, $used utilisés")
+        if (acc > 0 && acc < 900) append(" · précision ±${acc.toInt()} m")
+        if (!good) append(". Attends dehors, à découvert, que le signal devienne correct avant de démarrer.")
+        else append(". Tu peux démarrer.")
+    }
+    InfoRow(if (good) Icons.Outlined.GpsFixed else Icons.Outlined.GpsNotFixed, title, text, color)
+}

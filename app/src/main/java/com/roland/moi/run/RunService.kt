@@ -58,15 +58,31 @@ class RunService : Service(), LocationListener {
         try {
             ServiceCompat.startForeground(this, NOTIF_ID, notification(), type)
         } catch (e: Exception) {
-            // Permission de localisation absente : on ne peut pas suivre la course
+            // Permission de localisation absente ou refus d'Android : on le dit à l'écran
+            RunTracker.onError("Le suivi n'a pas pu démarrer (${e.javaClass.simpleName}). Vérifie que la localisation est autorisée pour MOI.")
             stopSelf()
             return START_NOT_STICKY
         }
 
         if (lm == null) {
             lm = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            var ok = false
+            // GPS d'abord ; le fournisseur « fusionné » ou réseau aide à trouver la position plus vite
+            val providers = buildList {
+                add(LocationManager.GPS_PROVIDER)
+                if (Build.VERSION.SDK_INT >= 31) add(LocationManager.FUSED_PROVIDER) else add(LocationManager.NETWORK_PROVIDER)
+            }
+            for (p in providers) {
+                try {
+                    if (lm?.allProviders?.contains(p) == true) {
+                        lm?.requestLocationUpdates(p, 1000L, 0f, this, Looper.getMainLooper())
+                        ok = true
+                    }
+                } catch (_: Exception) { }
+            }
+            if (!ok) RunTracker.onError("Impossible d'accéder au GPS du téléphone. Active la localisation puis réessaie.")
             try {
-                lm?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000L, 0f, this, Looper.getMainLooper())
+                if (Build.VERSION.SDK_INT >= 24) lm?.registerGnssStatusCallback(gnss, android.os.Handler(Looper.getMainLooper()))
             } catch (_: Exception) { }
         }
         if (wake == null) {
@@ -91,6 +107,14 @@ class RunService : Service(), LocationListener {
             }
         }
         return START_STICKY
+    }
+
+    private val gnss = object : android.location.GnssStatus.Callback() {
+        override fun onSatelliteStatusChanged(status: android.location.GnssStatus) {
+            var used = 0
+            for (i in 0 until status.satelliteCount) if (status.usedInFix(i)) used++
+            RunTracker.onSatellites(used, status.satelliteCount)
+        }
     }
 
     override fun onLocationChanged(location: Location) {
@@ -153,6 +177,7 @@ class RunService : Service(), LocationListener {
 
     override fun onDestroy() {
         try { lm?.removeUpdates(this) } catch (_: Exception) { }
+        try { lm?.unregisterGnssStatusCallback(gnss) } catch (_: Exception) { }
         lm = null
         try { if (wake?.isHeld == true) wake?.release() } catch (_: Exception) { }
         tts?.shutdown()

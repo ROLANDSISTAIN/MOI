@@ -27,6 +27,10 @@ data class RunState(
     val recent: List<Pair<Long, Double>> = emptyList(), // (temps actif ms, mètres) pour l'allure du moment
     val kmAnnounced: Int = 0,
     val startedAt: Long = 0L,         // heure de départ (currentTimeMillis)
+    val satsUsed: Int = 0,            // satellites utilisés pour la position
+    val satsSeen: Int = 0,            // satellites visibles
+    val lastFixAt: Long = 0L,         // elapsedRealtime de la dernière position reçue
+    val error: String = "",           // problème empêchant le suivi (affiché à l'écran)
 ) {
     enum class Status { IDLE, RUNNING, PAUSED, FINISHED }
 
@@ -63,10 +67,18 @@ object RunTracker {
 
     val idle = RunState.Status.IDLE
 
-    // Filtres anti-sauts du GPS
-    private const val MAX_ACCURACY_M = 25f
-    private const val MIN_STEP_M = 4.0
+    // Filtres anti-sauts du GPS (adaptés aux téléphones au GPS moins précis)
+    const val MAX_ACCURACY_M = 50f
+    private const val MIN_STEP_M = 5.0
     private const val MAX_SPEED_MS = 9.0   // ~32 km/h : au-delà, c'est un saut du GPS
+
+    fun onSatellites(used: Int, seen: Int) {
+        _state.value = _state.value.copy(satsUsed = used, satsSeen = seen)
+    }
+
+    fun onError(msg: String) {
+        _state.value = _state.value.copy(error = msg)
+    }
 
     fun start(ctx: Context) {
         last = null
@@ -119,8 +131,9 @@ object RunTracker {
 
     /** Appelé par le service à chaque position. Renvoie le nombre de km franchis à annoncer (0 sinon). */
     fun onLocation(loc: Location): Int {
-        val s = _state.value
+        val s0 = _state.value
         val acc = if (loc.hasAccuracy()) loc.accuracy else 999f
+        val s = s0.copy(lastFixAt = SystemClock.elapsedRealtime(), error = "")
         if (s.status != RunState.Status.RUNNING) {
             _state.value = s.copy(accuracy = acc, gpsReady = s.gpsReady || acc <= MAX_ACCURACY_M)
             return 0
@@ -139,7 +152,8 @@ object RunTracker {
         } else {
             val d = prev.distanceTo(loc).toDouble()
             val dt = ((loc.elapsedRealtimeNanos - prev.elapsedRealtimeNanos) / 1e9).coerceAtLeast(0.5)
-            if (d < MIN_STEP_M) {
+            // On ignore les petits déplacements dus à l'imprécision du GPS
+            if (d < maxOf(MIN_STEP_M, acc * 0.6)) {
                 _state.value = s.copy(accuracy = acc, gpsReady = true)
                 return 0
             }
